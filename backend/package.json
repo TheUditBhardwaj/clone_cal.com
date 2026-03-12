@@ -28,7 +28,7 @@
     "difflib": "^0.2.4",
     "dotenv": "^16.6.1",
     "dreamopt": "^0.8.0",
-    "drizzle-orm": "^0.30.10",
+    "drizzle-orm": "^0.45.1",
     "dunder-proto": "^1.0.1",
     "ee-first": "^1.1.1",
     "encodeurl": "^2.0.0",
@@ -134,7 +134,10 @@
   },
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:seed": "node src/db/seed.js"
   },
   "keywords": [],
   "author": "",
