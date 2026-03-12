@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import eventTypesRoutes from './routes/eventTypes.js';
 import availabilityRoutes from './routes/availability.js';
 import bookingsRoutes from './routes/bookings.js';
+import usersRoutes from './routes/users.js';
 
 dotenv.config();
 
@@ -22,5 +23,6 @@ app.get('/health', (req, res) => {
 app.use('/event-types', eventTypesRoutes);
 app.use('/availability', availabilityRoutes);
 app.use('/bookings', bookingsRoutes);
+app.use('/users', usersRoutes);
 
 export default app;

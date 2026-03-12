@@ -1,129 +1,190 @@
-import { useEffect, useState } from 'react';
-import { getAvailability, createAvailability, updateAvailability, deleteAvailability } from '../api';
-import { Plus, Trash2, Calendar } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Globe, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
+import { getSchedules, deleteSchedule } from '../api';
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-const DEFAULT_FORM = {
-  userId: 1,
-  dayOfWeek: 1,
-  startTime: '09:00:00',
-  endTime: '17:00:00',
-  timezone: 'America/New_York',
-};
+function formatTime(t) {
+  if (!t) return '';
+  const [h, m] = t.split(':');
+  const hour = parseInt(h);
+  return `${hour % 12 || 12}:${m} ${hour >= 12 ? 'PM' : 'AM'}`;
+}
+
+function buildSummary(schedule) {
+  const days = schedule.days || [];
+  if (!days.length) return 'No days set';
+  const sorted = [...days].sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+  const indices = sorted.map(d => d.dayOfWeek);
+  const unique = [...new Set(indices)];
+  const seq = unique.every((v, i) => i === 0 || v === unique[i - 1] + 1);
+  const dayStr = seq && unique.length > 2
+    ? `${DAY_SHORT[unique[0]]} - ${DAY_SHORT[unique[unique.length - 1]]}`
+    : unique.map(i => DAY_SHORT[i]).join(', ');
+  const timeStr = `${formatTime(sorted[0].startTime)} - ${formatTime(sorted[0].endTime)}`;
+  return `${dayStr}, ${timeStr}`;
+}
 
 export default function AvailabilityPage() {
-  const [availabilityList, setAvailabilityList] = useState([]);
+  const navigate = useNavigate();
+  const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState(DEFAULT_FORM);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const menuRef = useRef(null);
 
-  const fetchAvailability = async () => {
+  const fetchSchedules = async () => {
     try {
-      const res = await getAvailability();
-      setAvailabilityList(res.data);
+      const res = await getSchedules();
+      setSchedules(res.data);
     } catch (e) {
-      setError('Failed to load availability');
+      console.error(e);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchAvailability(); }, []);
+  useEffect(() => {
+    fetchSchedules();
+  }, []);
 
-  const handleAdd = async (e) => {
-    e.preventDefault();
-    setError('');
-    try {
-      await createAvailability({ ...form, dayOfWeek: parseInt(form.dayOfWeek) });
-      setSuccess('Availability added!');
-      fetchAvailability();
-      setTimeout(() => setSuccess(''), 2000);
-    } catch (e) {
-      setError(e.response?.data?.error || 'Failed to add availability');
-    }
-  };
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, e) => {
+    e.stopPropagation();
+    setOpenMenuId(null);
+    if (!confirm('Are you sure you want to delete this schedule?')) return;
     try {
-      await deleteAvailability(id);
-      fetchAvailability();
-    } catch (e) {
-      setError('Failed to delete availability');
+      await deleteSchedule(id);
+      setSchedules(prev => prev.filter(s => s.id !== id));
+    } catch (err) {
+      console.error('Failed to delete schedule:', err);
     }
   };
 
   return (
-    <div className="p-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Availability</h1>
-        <p className="text-gray-500 text-sm mt-1">Set your available days and hours.</p>
-      </div>
-
-      {error && <div className="mb-4 bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg">{error}</div>}
-      {success && <div className="mb-4 bg-green-50 text-green-600 text-sm px-4 py-3 rounded-lg">{success}</div>}
-
-      {/* Add New Availability Form */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
-        <h2 className="text-sm font-semibold text-gray-700 mb-4">Add Availability Window</h2>
-        <form onSubmit={handleAdd} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="animate-in" style={{ minHeight: '100vh', background: 'var(--bg-app)', color: 'var(--text-primary)' }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '40px 24px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 32 }}>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Day</label>
-            <select name="dayOfWeek" value={form.dayOfWeek}
-              onChange={(e) => setForm((p) => ({ ...p, dayOfWeek: e.target.value }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400">
-              {DAYS.map((d, i) => <option key={i} value={i}>{d}</option>)}
-            </select>
+            <h1 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 4 }}>Availability</h1>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Configure times when you are available for bookings.</p>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Start Time</label>
-            <input type="time" value={form.startTime.slice(0, 5)}
-              onChange={(e) => setForm((p) => ({ ...p, startTime: e.target.value + ':00' }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">End Time</label>
-            <input type="time" value={form.endTime.slice(0, 5)}
-              onChange={(e) => setForm((p) => ({ ...p, endTime: e.target.value + ':00' }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
-          </div>
-          <div className="flex items-end">
-            <button type="submit"
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm rounded-lg bg-gray-900 text-white hover:bg-gray-700 transition-colors">
-              <Plus className="w-4 h-4" /> Add
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: 4, display: 'flex', gap: 2 }}>
+              <button className="btn-secondary" style={{ 
+                fontSize: 13, 
+                padding: '6px 14px', 
+                borderRadius: 8, 
+                border: 'none', 
+                background: 'rgba(255,255,255,0.08)',
+                color: '#fff'
+              }}>My availability</button>
+              <button className="btn-secondary" style={{ 
+                fontSize: 13, 
+                padding: '6px 14px', 
+                borderRadius: 8, 
+                border: 'none', 
+                background: 'transparent',
+                opacity: 0.5
+              }}>Team availability</button>
+            </div>
+            <button className="btn-primary" 
+              onClick={() => navigate('/admin/availability/edit/new')}
+              style={{ padding: '8px 18px', borderRadius: 10, fontWeight: 600 }}>
+              <Plus className="w-4 h-4" /> New
             </button>
           </div>
-        </form>
-      </div>
-
-      {/* Existing Availability List */}
-      {loading ? (
-        <p className="text-gray-400 text-sm">Loading...</p>
-      ) : availabilityList.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
-          <Calendar className="w-10 h-10 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">No availability set yet.</p>
         </div>
-      ) : (
-        <div className="space-y-2">
-          {availabilityList.map((av) => (
-            <div key={av.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-5 py-3">
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-semibold text-gray-900 w-24">{DAYS[av.dayOfWeek]}</span>
-                <span className="text-sm text-gray-600">
-                  {av.startTime?.slice(0, 5)} – {av.endTime?.slice(0, 5)}
-                </span>
-                <span className="text-xs text-gray-400">{av.timezone}</span>
-              </div>
-              <button onClick={() => handleDelete(av.id)}
-                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                <Trash2 className="w-4 h-4" />
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {loading ? (
+            <div className="empty-state"><p>Loading…</p></div>
+          ) : schedules.length === 0 ? (
+            <div className="empty-state" style={{ border: '1px dashed var(--border)', borderRadius: 16 }}>
+              <Globe className="w-10 h-10" />
+              <p>No availability schedules yet.</p>
+              <button className="btn-primary" onClick={() => navigate('/admin/availability/edit/new')}>
+                <Plus className="w-4 h-4" /> Create schedule
               </button>
             </div>
-          ))}
+          ) : (
+            schedules.map((s) => (
+              <div key={s.id}
+                className="card-hover"
+                style={{ 
+                  padding: '24px 32px', 
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  background: 'transparent',
+                  border: '1px solid #1f1f1f',
+                  borderRadius: 16,
+                  transition: 'border-color 0.2s, background-color 0.2s',
+                }}
+                onClick={() => navigate(`/admin/availability/edit/${s.id}`)}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 15, fontWeight: 600 }}>{s.name}</span>
+                    {s.isDefault && (
+                      <span style={{ 
+                        fontSize: 11, 
+                        fontWeight: 600, 
+                        background: '#2a2a2a', 
+                        color: 'var(--text-secondary)', 
+                        padding: '2px 8px', 
+                        borderRadius: 6 
+                      }}>Default</span>
+                    )}
+                  </div>
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{buildSummary(s)}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                    <Globe className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} />
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{s.timezone}</span>
+                  </div>
+                </div>
+                <div style={{ position: 'relative' }}>
+                  <button className="btn-icon" 
+                    style={{ 
+                      width: 36, height: 36, 
+                      borderRadius: 10, 
+                      border: '1px solid #1f1f1f',
+                      background: openMenuId === s.id ? 'var(--bg-hover)' : 'transparent' 
+                    }} 
+                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === s.id ? null : s.id); }}>
+                    <MoreHorizontal className="w-4.5 h-4.5" />
+                  </button>
+                  {openMenuId === s.id && (
+                    <div ref={menuRef} className="dropdown-menu" style={{ right: 0, top: '100%', marginTop: 8 }}>
+                      <div className="dropdown-item danger" onClick={(e) => handleDelete(s.id, e)}>
+                        <Trash2 className="w-4 h-4" /> Delete
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
         </div>
-      )}
+
+        <div style={{ marginTop: 48, textAlign: 'center', padding: '32px 0' }}>
+          <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+            Temporarily out-of-office?{' '}
+            <span style={{ color: 'var(--text-primary)', fontWeight: 500, textDecoration: 'underline', cursor: 'pointer' }}>
+              Add a redirect
+            </span>
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

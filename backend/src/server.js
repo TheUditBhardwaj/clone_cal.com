@@ -1,13 +1,12 @@
 import app from './app.js';
-import db from './db/index.js';
+import { pool } from './db/index.js';
 
 const PORT = process.env.PORT || 5001;
 
 const startServer = async () => {
   try {
-    // Attempt a simple query to verify the database connection
-    // This assumes at least a successful connection is established
-    await db.execute('SELECT 1');
+    // Quick DB connectivity check using the raw pool
+    await pool.query('SELECT 1');
     console.log('Database connected successfully.');
 
     app.listen(PORT, () => {

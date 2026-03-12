@@ -94,6 +94,6 @@ export const deleteEventType = async (req, res) => {
     res.json({ message: 'Event type deleted successfully' });
   } catch (error) {
     console.error('Error deleting event type:', error);
-    res.status(500).json({ error: 'Failed to delete event type' });
+    res.status(500).json({ error: `Failed to delete: ${error.message}` });
   }
 };

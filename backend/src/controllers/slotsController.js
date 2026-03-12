@@ -14,85 +14,76 @@ export const getAvailableSlots = async (req, res) => {
     // 1. Fetch Event Type to get duration and userId
     const [eventType] = await db.select().from(eventTypes).where(eq(eventTypes.slug, event_slug));
     
-    if (!eventType) {
-      return res.status(404).json({ error: 'Event type not found' });
-    }
-
+    if (!eventType) return res.status(404).json({ error: 'Event type not found' });
     const { duration, userId } = eventType;
 
-    // 2. Determine Day of Week from requested date
-    const targetDate = parseISO(date); // e.g. "2023-11-20"
-    const dayOfWeek = targetDate.getDay(); // 0-6 (Sunday-Saturday)
+    // 2. Fetch User's Default Schedule
+    const [schedule] = await db.select().from(schedules).where(and(eq(schedules.userId, userId), eq(schedules.isDefault, true)));
+    if (!schedule) return res.json([]);
 
-    // 3. Fetch Availability for that User and Day of Week
-    const [userAvailability] = await db.select().from(availability).where(
-      and(
-        eq(availability.userId, userId),
-        eq(availability.dayOfWeek, dayOfWeek)
-      )
+    const targetDateStr = date; // 'yyyy-MM-dd'
+    const targetDate = parseISO(date);
+    const dayOfWeek = targetDate.getDay();
+
+    // 3. Fetch Availability (Day slots or Overrides)
+    let daySlots = [];
+    
+    // Check for overrides first
+    const overrides = await db.select().from(dateOverrides).where(
+      and(eq(dateOverrides.scheduleId, schedule.id), eq(dateOverrides.overrideDate, targetDateStr))
     );
 
-    if (!userAvailability) {
-      return res.json([]); // No availability on this day
+    if (overrides.length > 0) {
+      daySlots = overrides.map(o => ({ startTime: o.startTime, endTime: o.endTime }));
+    } else {
+      daySlots = await db.select().from(availability).where(
+        and(eq(availability.scheduleId, schedule.id), eq(availability.dayOfWeek, dayOfWeek))
+      );
     }
 
-    const { startTime, endTime } = userAvailability;
+    if (daySlots.length === 0) return res.json([]);
 
-    // Parse availability times into Date objects for the target date
-    const availStart = parse(`${date} ${startTime}`, 'yyyy-MM-dd HH:mm:ss', new Date());
-    const availEnd = parse(`${date} ${endTime}`, 'yyyy-MM-dd HH:mm:ss', new Date());
-
-    // 4. Fetch Existing Bookings for that Event Type on that Date
+    // 4. Fetch Existing Bookings
     const existingBookings = await db.select().from(bookings).where(
-      and(
-        eq(bookings.eventTypeId, eventType.id),
-        eq(bookings.bookingDate, targetDate)
-      )
+      and(eq(bookings.eventTypeId, eventType.id), eq(bookings.bookingDate, targetDate))
     );
 
-    // 5. Generate Potential Slots
+    // 5. Generate Slots
     const slots = [];
-    let currentSlotStart = availStart;
+    const now = new Date();
 
-    while (isBefore(addMinutes(currentSlotStart, duration), availEnd) || isEqual(addMinutes(currentSlotStart, duration), availEnd)) {
-      const slotEnd = addMinutes(currentSlotStart, duration);
+    for (const range of daySlots) {
+      const availStart = parse(`${date} ${range.startTime}`, 'yyyy-MM-dd HH:mm:ss', new Date());
+      const availEnd = parse(`${date} ${range.endTime}`, 'yyyy-MM-dd HH:mm:ss', new Date());
 
-      // 6. Check for collisions with existing bookings
-      let isAvailable = true;
-      for (const booking of existingBookings) {
-        const bookingStart = parse(`${date} ${booking.startTime}`, 'yyyy-MM-dd HH:mm:ss', new Date());
-        const bookingEnd = parse(`${date} ${booking.endTime}`, 'yyyy-MM-dd HH:mm:ss', new Date());
+      let currentSlotStart = availStart;
+      while (isBefore(addMinutes(currentSlotStart, duration), availEnd) || isEqual(addMinutes(currentSlotStart, duration), availEnd)) {
+        const slotEnd = addMinutes(currentSlotStart, duration);
 
-        // A slot is unavailable if it overlaps with an existing booking
-        if (
-          (isBefore(currentSlotStart, bookingEnd) || isEqual(currentSlotStart, bookingStart)) &&
-          (isAfter(slotEnd, bookingStart) || isEqual(slotEnd, bookingEnd))
-        ) {
-          isAvailable = false;
-          break;
+        let isAvailable = true;
+        for (const booking of existingBookings) {
+          const bStart = parse(`${date} ${booking.startTime}`, 'yyyy-MM-dd HH:mm:ss', new Date());
+          const bEnd = parse(`${date} ${booking.endTime}`, 'yyyy-MM-dd HH:mm:ss', new Date());
+          if ((isBefore(currentSlotStart, bEnd) || isEqual(currentSlotStart, bStart)) && (isAfter(slotEnd, bStart) || isEqual(slotEnd, bEnd))) {
+            isAvailable = false;
+            break;
+          }
         }
-      }
 
-      if (isAvailable) {
-        // Only return future slots if the requested date is today
-        const now = new Date();
-        if (isAfter(currentSlotStart, now) || targetDate.toDateString() !== now.toDateString()) {
-           slots.push({
+        if (isAvailable && (isAfter(currentSlotStart, now) || targetDate.toDateString() !== now.toDateString())) {
+          slots.push({
             start: format(currentSlotStart, 'HH:mm:ss'),
             end: format(slotEnd, 'HH:mm:ss'),
           });
         }
+        currentSlotStart = addMinutes(currentSlotStart, duration);
       }
-
-      // Move to the next potential slot (e.g., every 30 mins)
-      // For simplicity, we step by the duration of the event
-      currentSlotStart = addMinutes(currentSlotStart, duration);
     }
 
-    res.json(slots);
+    res.json(slots.sort((a, b) => a.start.localeCompare(b.start)));
 
   } catch (error) {
-    console.error('Error calculating time slots:', error);
-    res.status(500).json({ error: 'Failed to calculate available time slots' });
+    console.error('Error calculating slots:', error);
+    res.status(500).json({ error: 'Internal error' });
   }
 };
