@@ -41,7 +41,6 @@
     "es6-symbol": "^3.1.4",
     "es6-weak-map": "^2.0.3",
     "esbuild": "^0.25.12",
-    "esbuild-darwin-arm64": "^0.15.18",
     "esbuild-register": "^3.6.0",
     "escape-html": "^1.0.3",
     "esniff": "^2.0.1",
