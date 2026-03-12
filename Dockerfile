@@ -1,15 +1,13 @@
-FROM node:18-alpine
+FROM node:18
 
 WORKDIR /app
 
 # Copy root package files
 COPY package*.json ./
+RUN npm install
 
 # Copy backend package files
 COPY backend/package*.json ./backend/
-
-# Install dependencies (from root and backend)
-RUN npm install
 RUN cd backend && npm install
 
 # Copy everything else
@@ -17,5 +15,5 @@ COPY . .
 
 EXPOSE 3000
 
-# Start backend from the root
-CMD ["npm", "start"]
+# Start backend using the direct path
+CMD ["node", "backend/src/server.js"]
