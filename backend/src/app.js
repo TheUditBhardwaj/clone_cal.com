@@ -6,7 +6,11 @@ import availabilityRoutes from './routes/availability.js';
 import bookingsRoutes from './routes/bookings.js';
 import usersRoutes from './routes/users.js';
 
-dotenv.config();
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const app = express();
 
