@@ -70,6 +70,18 @@ export const createSchedule = async (req, res) => {
       }
     }
 
+    // Insert overrides
+    const { overrides = [] } = req.body;
+    if (overrides.length > 0) {
+      const ovToInsert = overrides.map(ov => ({
+        scheduleId: newSchedule.id,
+        overrideDate: ov.date,
+        startTime: ov.start.length === 5 ? ov.start + ':00' : ov.start,
+        endTime: ov.end.length === 5 ? ov.end + ':00' : ov.end,
+      }));
+      await db.insert(dateOverrides).values(ovToInsert);
+    }
+
     // Return full schedule
     const slots = await db.select().from(availability).where(eq(availability.scheduleId, newSchedule.id));
     res.status(201).json({ ...newSchedule, days: slots, overrides: [] });

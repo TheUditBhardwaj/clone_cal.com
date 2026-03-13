@@ -1,6 +1,6 @@
 import db from '../db/index.js';
-import { availability, bookings, eventTypes } from '../db/schema.js';
-import { eq, and } from 'drizzle-orm';
+import { schedules, availability, dateOverrides, bookings, eventTypes } from '../db/schema.js';
+import { eq, and, inArray } from 'drizzle-orm';
 import { addMinutes, format, isBefore, isAfter, isEqual, parseISO, parse } from 'date-fns';
 
 export const getAvailableSlots = async (req, res) => {
@@ -43,9 +43,18 @@ export const getAvailableSlots = async (req, res) => {
 
     if (daySlots.length === 0) return res.json([]);
 
-    // 4. Fetch Existing Bookings
+    // 4. Fetch ALL Existing Bookings for this USER (not just this event type)
+    // to prevent double booking across different event types.
+    const allUserEventTypes = await db.select({ id: eventTypes.id })
+      .from(eventTypes)
+      .where(eq(eventTypes.userId, userId));
+    const eventTypeIds = allUserEventTypes.map(et => et.id);
+
     const existingBookings = await db.select().from(bookings).where(
-      and(eq(bookings.eventTypeId, eventType.id), eq(bookings.bookingDate, targetDate))
+      and(
+        inArray(bookings.eventTypeId, eventTypeIds), 
+        eq(bookings.bookingDate, targetDate)
+      )
     );
 
     // 5. Generate Slots

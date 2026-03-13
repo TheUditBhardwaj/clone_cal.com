@@ -1,6 +1,6 @@
 import db from '../db/index.js';
 import { bookings, eventTypes } from '../db/schema.js';
-import { eq, and, or, lt, gt, lte, gte } from 'drizzle-orm';
+import { eq, and, or, lt, gt, lte, gte, inArray } from 'drizzle-orm';
 
 export const getBookings = async (req, res) => {
   try {
@@ -20,11 +20,19 @@ export const createBooking = async (req, res) => {
       return res.status(400).json({ error: 'Missing required booking fields' });
     }
 
-    // Basic overlap check (simplified for now, assumes same date)
-    // In a real app, you'd want to handle timezone conversions and more complex overlapping logic
+    // 1. Identify the user who owns this event type
+    const [eventType] = await db.select().from(eventTypes).where(eq(eventTypes.id, eventTypeId));
+    if (!eventType) return res.status(404).json({ error: 'Event type not found' });
+    const { userId } = eventType;
+
+    // 2. Fetch all event type IDs for this user
+    const userEvents = await db.select({ id: eventTypes.id }).from(eventTypes).where(eq(eventTypes.userId, userId));
+    const userEventTypeIds = userEvents.map(e => e.id);
+
+    // 3. Robust overlap check across ALL user events
     const overlappingBookings = await db.select().from(bookings).where(
       and(
-        eq(bookings.eventTypeId, eventTypeId),
+        inArray(bookings.eventTypeId, userEventTypeIds),
         eq(bookings.bookingDate, new Date(bookingDate)),
         or(
           and(

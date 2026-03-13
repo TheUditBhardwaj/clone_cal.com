@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
-import { ArrowRight, Calendar, Clock, Video, Globe, Lock, Code, Layers, CheckCircle, File, Search, Settings } from 'lucide-react';
-import { OrbitingCircles } from '@/components/ui/orbiting-circles';
+import { ArrowRight, Clock, MapPin, Globe, Video, Mic, MessageSquare, Monitor, MoreHorizontal, Calendar as CalendarIcon } from 'lucide-react';
+import { OrbitingCircles } from '../components/ui/orbiting-circles';
 
 /* ─── tiny hook: triggers .visible class when element enters viewport ─── */
 function useReveal() {
@@ -16,294 +16,494 @@ function useReveal() {
   }, []);
 }
 
-/* ─── animated number counter ─── */
-function Counter({ to, suffix = '' }) {
-  const ref = useRef(null);
-  useEffect(() => {
-    const el = ref.current;
-    const io = new IntersectionObserver(([e]) => {
-      if (!e.isIntersecting) return;
-      let start = 0;
-      const step = () => {
-        start += Math.ceil(to / 60);
-        if (start >= to) { el.textContent = to + suffix; return; }
-        el.textContent = start + suffix;
-        requestAnimationFrame(step);
-      };
-      requestAnimationFrame(step);
-      io.disconnect();
-    }, { threshold: 0.5 });
-    io.observe(el);
-    return () => io.disconnect();
-  }, [to, suffix]);
-  return <span ref={ref}>0{suffix}</span>;
-}
+const LOGOS_ROW1 = ['etScale', 'coinbase', 'storyblok', 'AngelList', 'Raycast', 'Vercel', 'Supabase'];
+const LOGOS_ROW2 = ['Udemy', 'Rho', 'deel.', 'Framer', 'ramp', 'PlanetScale', 'Loom'];
 
-const LOGOS = ['coinbase', 'Storyblok', 'AngelList', 'Raycast', 'Vercel', 'Supabase', 'Udemy', 'Rho', 'Deel', 'Framer'];
+const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const WEEKS = [
+  [null, null, null, null, 1, 2, 3],
+  [4, 5, 6, 7, 8, 9, 10],
+  [11, 12, 13, 14, 15, 16, 17],
+  [18, 19, 20, 21, 22, 23, 24],
+  [25, 26, 27, 28, 29, 30, null],
+];
 
 export default function LandingPage() {
   useReveal();
 
   return (
     <>
-      {/* Global animation styles */}
       <style>{`
-        @keyframes fade-up   { from { opacity:0; transform:translateY(32px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes fade-in   { from { opacity:0; } to { opacity:1; } }
-        @keyframes float     { 0%,100% { transform:translateY(0px);  } 50% { transform:translateY(-12px); } }
-        @keyframes marquee   { from { transform:translateX(0); } to { transform:translateX(-50%); } }
-        @keyframes gradient  { 0%,100% { background-position:0% 50%; } 50% { background-position:100% 50%; } }
-        @keyframes ping-slow { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.4; transform:scale(1.3); } }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 
-        .hero-badge    { animation: fade-up .6s .1s both ease-out; }
-        .hero-h1       { animation: fade-up .7s .25s both ease-out; }
-        .hero-sub      { animation: fade-up .7s .4s both ease-out; }
-        .hero-btns     { animation: fade-up .7s .55s both ease-out; }
-        .hero-note     { animation: fade-up .6s .7s both ease-out; }
-        .hero-visual   { animation: fade-in .9s .3s both ease-out, float 6s 1.2s ease-in-out infinite; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .reveal        { opacity:0; transform:translateY(28px); transition: opacity .7s ease, transform .7s ease; }
-        .reveal.visible { opacity:1; transform:none; }
+        body, #root { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        .stagger-1 { transition-delay:.05s; }
-        .stagger-2 { transition-delay:.15s; }
-        .stagger-3 { transition-delay:.25s; }
-        .stagger-4 { transition-delay:.35s; }
-        .stagger-5 { transition-delay:.45s; }
-        .stagger-6 { transition-delay:.55s; }
-        .stagger-7 { transition-delay:.65s; }
-        .stagger-8 { transition-delay:.75s; }
+        @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        @keyframes fade-up { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 
-        .marquee-track { display:flex; width:max-content; animation: marquee 22s linear infinite; }
-        .marquee-track:hover { animation-play-state:paused; }
+        .hero-badge  { animation: fade-up .5s .05s both; }
+        .hero-h1     { animation: fade-up .6s .15s both; }
+        .hero-sub    { animation: fade-up .6s .28s both; }
+        .hero-btns   { animation: fade-up .6s .40s both; }
+        .hero-note   { animation: fade-up .5s .52s both; }
+        .hero-right  { animation: fade-in .8s .3s both; }
 
-        .gradient-text {
-          background: linear-gradient(270deg,#6d28d9,#2563eb,#059669,#6d28d9);
-          background-size: 300% 300%;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: gradient 6s ease infinite;
+        .reveal      { opacity: 0; transform: translateY(24px); transition: opacity .65s ease, transform .65s ease; }
+        .reveal.visible { opacity: 1; transform: none; }
+        .s1 { transition-delay: .05s; } .s2 { transition-delay: .15s; } .s3 { transition-delay: .25s; }
+        .s4 { transition-delay: .35s; } .s5 { transition-delay: .45s; }
+
+        .marquee-wrap { overflow: hidden; position: relative; }
+        .marquee-wrap::before, .marquee-wrap::after {
+          content: ''; position: absolute; top: 0; height: 100%; width: 80px; z-index: 2; pointer-events: none;
+        }
+        .marquee-wrap::before { left: 0; background: linear-gradient(to right, #f4f4f5, transparent); }
+        .marquee-wrap::after  { right: 0; background: linear-gradient(to left, #f4f4f5, transparent); }
+        .marquee-track { display: flex; width: max-content; animation: marquee 28s linear infinite; }
+        .marquee-track:hover { animation-play-state: paused; }
+
+        .pill-btn {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 6px 14px; border-radius: 999px; border: 1px solid #e5e7eb;
+          background: #fff; font-size: 12px; font-weight: 600; color: #374151; cursor: pointer;
+          transition: background .2s;
+        }
+        .pill-btn:hover { background: #f9fafb; }
+
+        .dur-pill {
+          padding: 5px 12px; border-radius: 6px; font-size: 13px; font-weight: 500;
+          cursor: pointer; transition: all .15s;
+        }
+        .dur-pill.active { background: #111827; color: #fff; }
+        .dur-pill.inactive { background: transparent; color: #6b7280; }
+        .dur-pill.inactive:hover { background: #f3f4f6; }
+
+        .cal-date {
+          width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+          border-radius: 8px; font-size: 14px; cursor: pointer; position: relative; transition: background .15s;
+        }
+        .cal-date.avail  { background: #f3f4f6; font-weight: 500; color: #111827; }
+        .cal-date.avail:hover { background: #e5e7eb; }
+        .cal-date.selected { background: #111827; color: #fff; font-weight: 700; border-radius: 10px; }
+        .cal-date.today-dot::after {
+          content: ''; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
+          width: 4px; height: 4px; border-radius: 50%; background: #111827;
+        }
+        .cal-date.selected.today-dot::after { background: #fff; }
+        .cal-date.empty { cursor: default; }
+
+        .step-badge {
+          display: inline-flex; align-items: center; justify-content: center;
+          width: 36px; height: 36px; border-radius: 10px; background: #f3f4f6;
+          font-size: 13px; font-weight: 700; color: #6b7280;
         }
 
-        .glow-btn:hover { box-shadow: 0 0 30px rgba(109,40,217,.45); }
-        .card-hover { transition: transform .3s ease, box-shadow .3s ease; }
-        .card-hover:hover { transform:translateY(-6px); box-shadow:0 20px 40px rgba(0,0,0,.08); }
+        .feature-card { border: 1px solid #e5e7eb; border-radius: 20px; background: #fff; padding: 28px; overflow: hidden; }
+        .feature-card h3 { font-size: 18px; font-weight: 700; color: #111827; margin-bottom: 10px; }
+        .feature-card p  { font-size: 14px; color: #6b7280; line-height: 1.6; }
+
+        .main-btn {
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 12px 22px; border-radius: 10px; font-size: 15px; font-weight: 700;
+          cursor: pointer; transition: all .2s; text-decoration: none;
+        }
+        .main-btn.dark  { background: #111827; color: #fff; border: none; }
+        .main-btn.dark:hover  { background: #1f2937; }
+        .main-btn.light { background: #fff; color: #111827; border: 1px solid #e5e7eb; }
+        .main-btn.light:hover { background: #f9fafb; }
+
+        .avail-row {
+          display: flex; align-items: center; gap: 10px; padding: 8px 0;
+          border-bottom: 1px solid #f3f4f6; font-size: 13px;
+        }
+        .toggle { width: 36px; height: 20px; border-radius: 999px; position: relative; flex-shrink: 0; cursor: pointer; }
+        .toggle.on  { background: #111827; }
+        .toggle.off { background: #d1d5db; }
+        .toggle::after {
+          content: ''; position: absolute; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff;
+          transition: left .15s;
+        }
+        .toggle.on::after  { left: 18px; }
+        .toggle.off::after { left: 2px; }
+        .time-input {
+          padding: 4px 10px; border: 1px solid #e5e7eb; border-radius: 6px;
+          font-size: 12px; font-weight: 500; color: #374151; background: #fff;
+        }
+
+        .notice-select {
+          width: 100%; padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 8px;
+          font-size: 14px; font-weight: 500; color: #374151; background: #fff;
+          appearance: none; cursor: pointer;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+          background-repeat: no-repeat; background-position: right 12px center;
+        }
+
+        .hero-card { background: #fff; border-radius: 20px; border: 1px solid #e5e7eb; padding: 24px; }
+
+        .star-trustpilot { color: #00b67a; }
+        .star-ph  { color: #ff6154; }
+        .star-g2  { color: #ff492c; }
+
+        .review-badge {
+          display: flex; align-items: center; gap: 8px; padding: 10px 16px;
+          border: 1px solid #e5e7eb; border-radius: 12px; background: #fff;
+        }
+
+        .meet-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f3f4f6; }
       `}</style>
 
-      <div className="min-h-screen bg-white font-sans antialiased text-slate-900 overflow-x-hidden">
+      <div style={{ minHeight: '100vh', background: '#f4f4f5', fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#111827', overflowX: 'hidden' }}>
 
         {/* ── Navbar ── */}
-        <nav className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
-          <div className="flex items-center gap-10">
-            <span className="text-2xl font-bold tracking-tight">CloneCal</span>
-            <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-500">
-              {['Solutions', 'Enterprise', 'Pricing', 'About'].map(l => (
-                <button key={l} className="hover:text-slate-900 transition-colors duration-200">{l}</button>
+        <nav style={{ position: 'sticky', top: 0, zIndex: 50, padding: '12px 24px', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ background: '#fff', borderRadius: '999px', border: '1px solid #e5e7eb', padding: '10px 24px', display: 'flex', alignItems: 'center', gap: '32px', boxShadow: '0 1px 6px rgba(0,0,0,.06)', maxWidth: 900, width: '100%' }}>
+            <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.5px', color: '#111827' }}>Cal.com</span>
+            <div style={{ display: 'flex', gap: 24, flex: 1 }}>
+              {['Solutions ▾', 'Enterprise', 'Cal.ai', 'Developer ▾', 'Resources ▾', 'Pricing'].map(l => (
+                <button key={l} style={{ background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: '#374151', cursor: 'pointer', fontFamily: 'inherit', padding: '2px 0' }}
+                  onMouseEnter={e => e.target.style.color = '#111827'}
+                  onMouseLeave={e => e.target.style.color = '#374151'}>{l}</button>
               ))}
             </div>
+            <Link to="/admin" style={{ background: '#111827', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 18px', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit', textDecoration: 'none' }}>
+              Go to app <ArrowRight size={14} />
+            </Link>
           </div>
-          <Link to="/admin"
-            className="glow-btn px-5 py-2.5 text-sm font-semibold text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-all duration-300 flex items-center gap-2 group">
-            Get started
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
-          </Link>
         </nav>
 
         {/* ── Hero ── */}
-        <main className="max-w-7xl mx-auto px-6 pt-20 pb-28">
-          <div className="flex flex-col lg:flex-row items-center gap-16">
+        <main style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 24px 0' }}>
+          <div style={{ background: '#fff', borderRadius: 24, padding: '56px 48px', display: 'flex', gap: 48, alignItems: 'center', border: '1px solid #e5e7eb', boxShadow: '0 2px 12px rgba(0,0,0,.04)' }}>
 
             {/* Left */}
-            <div className="flex-1 text-center lg:text-left">
-              <div className="hero-badge inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-[10px] sm:text-xs font-semibold text-slate-600 mb-6 cursor-default">
-                <span className="bg-white px-1.5 py-0.5 rounded shadow-sm text-[9px] sm:text-[10px]">NEW</span>
-                CloneCal launches →
+            <div style={{ flex: '1 1 460px', minWidth: 0 }}>
+              <div className="hero-badge pill-btn" style={{ marginBottom: 24 }}>
+                CloneCal launches v1.0 <ArrowRight size={12} />
               </div>
 
-              <h1 className="hero-h1 text-4xl sm:text-5xl md:text-6xl lg:text-[5.5rem] font-bold tracking-tight leading-[1.1] lg:leading-[1.05] mb-6 sm:mb-8">
-                The <span className="gradient-text">better</span> way to schedule your meetings
+              <h1 className="hero-h1" style={{ fontSize: 'clamp(40px,5vw,68px)', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-2px', marginBottom: 20, color: '#111827' }}>
+                The better way to schedule your meetings
               </h1>
 
-              <p className="hero-sub text-base sm:text-lg text-slate-500 mb-8 sm:mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                A fully customizable scheduling platform for individuals, businesses, and developers who need powerful booking workflows.
+              <p className="hero-sub" style={{ fontSize: 16, color: '#6b7280', lineHeight: 1.65, marginBottom: 28, maxWidth: 460 }}>
+                A fully customizable scheduling software for individuals, businesses taking calls and developers building scheduling platforms.
               </p>
 
-              <div className="hero-btns flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
-                <Link to="/admin"
-                  className="glow-btn w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-slate-900 text-white rounded-xl font-bold text-sm sm:text-base hover:bg-slate-800 transition-all duration-300 flex items-center justify-center gap-2 group">
+              <div className="hero-btns" style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 380 }}>
+                {/* Google button */}
+                <Link to="/admin" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '14px 20px', background: '#111827', color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                   Get started for free
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
                 </Link>
-                <button className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white border border-slate-200 text-slate-900 rounded-xl font-bold text-sm sm:text-base hover:bg-slate-50 hover:border-slate-300 transition-all duration-300">
-                  Book a demo →
-                </button>
+                <Link to="/admin" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 20px', background: '#fff', color: '#111827', border: '1px solid #e5e7eb', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none' }}>
+                  Sign up with email <ArrowRight size={14} />
+                </Link>
               </div>
-              <p className="hero-note mt-5 text-xs sm:text-sm text-slate-400">No credit card required · Free forever</p>
+
+              <p className="hero-note" style={{ marginTop: 14, fontSize: 13, color: '#9ca3af' }}>No credit card required</p>
             </div>
 
-            {/* Right – visual with orbiting circles */}
-            <div className="hero-visual flex-1 w-full max-w-lg hidden lg:block">
-              <div className="relative h-[500px] w-full flex items-center justify-center overflow-hidden rounded-[3rem]">
-                {/* Dashboard mock in center */}
-                <div className="relative z-20 bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 w-[340px] transform hover:scale-105 transition-transform duration-500">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <p className="text-[10px] text-slate-400 mb-0.5">Scheduling</p>
-                      <p className="font-bold text-sm text-slate-900">Next meeting</p>
-                    </div>
-                    <div className="bg-slate-900 text-white rounded-lg px-2 py-1 text-[10px] font-bold">LIVE</div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="h-2 w-16 bg-slate-200 rounded mb-1.5" />
-                        <div className="h-1.5 w-24 bg-slate-100 rounded" />
-                      </div>
-                    </div>
-                    <div className="p-3 rounded-xl border border-slate-100 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center">
-                        <Clock className="w-4 h-4 text-slate-300" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="h-2 w-20 bg-slate-100 rounded mb-1.5" />
-                        <div className="h-1.5 w-12 bg-slate-50 rounded" />
-                      </div>
-                    </div>
+            {/* Right – booking widget */}
+            <div className="hero-right" style={{ flex: '0 0 auto', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              {/* Booking info card */}
+              <div className="hero-card" style={{ width: 260 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#c084fc,#818cf8)', flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: 12, color: '#6b7280' }}>Denise Wilson</div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: '#111827' }}>Property Viewing</div>
                   </div>
                 </div>
+                <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.55, marginBottom: 16 }}>
+                  Tour your potential dream home with our experienced real estate professionals.
+                </p>
+                {/* Duration pills */}
+                <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+                  {['15m','30m','45m','1h'].map(d => (
+                    <span key={d} className={`dur-pill ${d === '45m' ? 'active' : 'inactive'}`}>{d}</span>
+                  ))}
+                </div>
+                <div style={{ fontSize: 13, color: '#374151', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <MapPin size={14} color="#6b7280" /> Pine Realty Office
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Globe size={14} color="#6b7280" /> Australia/Sydney ▾
+                  </div>
+                </div>
+              </div>
 
-                {/* Orbiting Elements */}
-                <OrbitingCircles radius={window.innerWidth < 640 ? 140 : 190} duration={30} delay={0}>
-                  <div className="p-2 sm:p-3 bg-white rounded-2xl shadow-lg border border-slate-100 text-slate-400">
-                    <Calendar className="w-4 h-4 sm:w-6 sm:h-6" />
-                  </div>
-                </OrbitingCircles>
-                <OrbitingCircles radius={window.innerWidth < 640 ? 140 : 190} duration={30} delay={15}>
-                  <div className="p-2 sm:p-3 bg-white rounded-2xl shadow-lg border border-slate-100 text-slate-400">
-                    <Search className="w-4 h-4 sm:w-6 sm:h-6" />
-                  </div>
-                </OrbitingCircles>
-                
-                <OrbitingCircles radius={window.innerWidth < 640 ? 90 : 130} duration={20} delay={0} reverse>
-                  <div className="p-2 sm:p-3 bg-white rounded-2xl shadow-lg border border-slate-100 text-slate-400">
-                    <Settings className="w-3 h-3 sm:w-5 sm:h-5" />
-                  </div>
-                </OrbitingCircles>
-                <OrbitingCircles radius={window.innerWidth < 640 ? 90 : 130} duration={20} delay={10} reverse>
-                  <div className="p-2 sm:p-2.5 bg-white rounded-2xl shadow-lg border border-slate-100 text-slate-400">
-                    <File className="w-3 h-3 sm:w-5 sm:h-5" />
-                  </div>
-                </OrbitingCircles>
-                
-                {/* Background glow */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-violet-100/30 blur-[80px] rounded-full z-0" />
+              {/* Calendar card */}
+              <div className="hero-card" style={{ width: 280 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <span style={{ fontSize: 16, fontWeight: 700 }}>May <span style={{ color: '#6b7280', fontWeight: 400 }}>2025</span></span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 2, marginBottom: 6 }}>
+                  {DAYS.map(d => (
+                    <div key={d} style={{ fontSize: 10, fontWeight: 600, color: '#9ca3af', textAlign: 'center', paddingBottom: 6 }}>{d.slice(0,3)}</div>
+                  ))}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 2 }}>
+                  {WEEKS.flat().map((date, i) => {
+                    if (!date) return <div key={i} className="cal-date empty" />;
+                    const isSelected = date === 21;
+                    const isToday = date === 15;
+                    const isAvail = [6,7,8,13,14,15,16,20,21,22,23,27,28,29,30].includes(date);
+                    return (
+                      <div key={i}
+                        className={`cal-date ${isSelected ? 'selected' : isAvail ? 'avail' : ''} ${isToday ? 'today-dot' : ''}`}
+                        style={{ margin: '1px auto', color: isSelected ? '#fff' : isAvail ? '#111827' : '#d1d5db' }}>
+                        {date}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* ── Scrolling logo marquee ── */}
-          <div className="mt-28 reveal">
-            <p className="text-center text-xs font-semibold text-slate-400 uppercase tracking-widest mb-8">Trusted by fast-growing companies worldwide</p>
-            <div className="overflow-hidden relative">
-              <div className="absolute left-0 top-0 h-full w-20 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
-              <div className="absolute right-0 top-0 h-full w-20 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+          {/* ── Review badges ── */}
+          <div style={{ display: 'flex', gap: 16, marginTop: 20, justifyContent: 'flex-end' }}>
+            <div className="review-badge">
+              {'★★★★½'.split('').map((s, i) => <span key={i} className="star-trustpilot" style={{ fontSize: 18 }}>★</span>)}
+              <span style={{ fontSize: 12, color: '#6b7280', marginLeft: 4 }}>Trustpilot</span>
+            </div>
+            <div className="review-badge">
+              {'★★★★★'.split('').map((s, i) => <span key={i} className="star-ph" style={{ fontSize: 18 }}>★</span>)}
+              <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#ff6154', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 11, fontWeight: 800 }}>P</div>
+            </div>
+            <div className="review-badge">
+              {'★★★★½'.split('').map((s, i) => <span key={i} className="star-g2" style={{ fontSize: 18 }}>★</span>)}
+              <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#ff492c', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 11, fontWeight: 800 }}>G</div>
+            </div>
+          </div>
+
+          {/* ── Logo marquee ── */}
+          <div style={{ marginTop: 40, marginBottom: 8 }}>
+            <p style={{ fontSize: 12, fontWeight: 600, color: '#9ca3af', marginBottom: 16 }}>Trusted by fast-growing companies around the world</p>
+            <div className="marquee-wrap">
               <div className="marquee-track">
-                {[...LOGOS, ...LOGOS].map((name, i) => (
-                  <div key={i} className="flex items-center justify-center mx-10 grayscale opacity-50 hover:opacity-100 hover:grayscale-0 transition-all duration-300">
-                    <span className="text-xl font-black tracking-tight">{name}</span>
-                  </div>
+                {[...LOGOS_ROW1, ...LOGOS_ROW1].map((name, i) => (
+                  <span key={i} style={{ marginRight: 56, fontSize: 16, fontWeight: 800, color: '#9ca3af', whiteSpace: 'nowrap', letterSpacing: '-0.3px' }}>{name}</span>
+                ))}
+              </div>
+            </div>
+            <div className="marquee-wrap" style={{ marginTop: 10 }}>
+              <div className="marquee-track" style={{ animationDirection: 'reverse', animationDuration: '24s' }}>
+                {[...LOGOS_ROW2, ...LOGOS_ROW2].map((name, i) => (
+                  <span key={i} style={{ marginRight: 56, fontSize: 16, fontWeight: 800, color: '#9ca3af', whiteSpace: 'nowrap', letterSpacing: '-0.3px' }}>{name}</span>
                 ))}
               </div>
             </div>
           </div>
 
           {/* ── How it works ── */}
-          <div className="mt-44 text-center">
-            <p className="reveal inline-block px-3 py-1 rounded-full bg-slate-100 text-xs font-bold text-slate-600 uppercase tracking-wider">
-              How it works
-            </p>
-            <h2 className="reveal mt-4 text-4xl md:text-5xl font-bold tracking-tight mb-6">
-              Appointment scheduling, <span className="gradient-text">simplified</span>
+          <div style={{ marginTop: 80, textAlign: 'center' }}>
+            <div className="reveal pill-btn" style={{ margin: '0 auto 20px' }}>
+              🔁 How it works
+            </div>
+            <h2 className="reveal" style={{ fontSize: 'clamp(32px,4vw,52px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: 14 }}>
+              With us, appointment scheduling is easy
             </h2>
-            <p className="reveal text-lg text-slate-500 max-w-2xl mx-auto mb-16">
-              Effortless scheduling for businesses and individuals.
+            <p className="reveal" style={{ fontSize: 16, color: '#6b7280', maxWidth: 540, margin: '0 auto 12px', lineHeight: 1.65 }}>
+              Effortless scheduling for business and individuals, powerful solutions for fast-growing modern companies.
             </p>
+            <div className="reveal" style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 44 }}>
+              <Link to="/admin" className="main-btn dark" style={{ textDecoration: 'none' }}>Get started <ArrowRight size={15} /></Link>
+              <button className="main-btn light">Book a demo <ArrowRight size={15} /></button>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                { step: '01', title: 'Connect your calendar', desc: "We handle all the cross-referencing so you don't worry about double bookings.", icon: Calendar },
-                { step: '02', title: 'Set your availability', desc: "Block weekends, add buffers, set timezone. We make it effortless.", icon: Clock },
-                { step: '03', title: 'Choose how to meet', desc: "Video, phone, or in-person — your bookers choose what works.", icon: Video }
-              ].map((item, id) => (
-                <div key={id}
-                  className={`reveal stagger-${id + 1} card-hover p-8 rounded-3xl bg-slate-50 border border-slate-100 text-left`}>
-                  <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-400 mb-6 shadow-sm">
-                    {item.step}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+              {/* Card 01 */}
+              <div className="reveal s1 feature-card" style={{ textAlign: 'left' }}>
+                <span className="step-badge" style={{ marginBottom: 20, display: 'inline-flex' }}>01</span>
+                <h3>Connect your calendar</h3>
+                <p>We'll handle all the cross-referencing, so you don't have to worry about double bookings.</p>
+                <div style={{ marginTop: 32, display: 'flex', justifyContent: 'center', alignItems: 'center', height: 180, position: 'relative' }}>
+                  {/* Central Node */}
+                  <div style={{ 
+                    width: 90, height: 90, borderRadius: '50%', border: '2px solid #e5e7eb', 
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                    fontSize: 14, fontWeight: 800, color: '#111827', background: '#fff', 
+                    boxShadow: '0 4px 12px rgba(0,0,0,.08)', position: 'relative', zIndex: 10 
+                  }}>
+                    Cal.com
                   </div>
-                  <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                  <p className="text-slate-500 leading-relaxed text-sm mb-8">{item.desc}</p>
-                  <div className="flex justify-center pt-6 border-t border-slate-100">
-                    <item.icon className="w-14 h-14 text-slate-200" strokeWidth={1} />
+
+                  {/* Inner Orbit */}
+                  <OrbitingCircles radius={60} duration={20}>
+                    <div style={{ width: 28, height: 28, borderRadius: 8, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,.1)', border: '1px solid #f3f4f6' }}>
+                      <CalendarIcon size={14} className="text-red-400" />
+                    </div>
+                  </OrbitingCircles>
+                  <OrbitingCircles radius={60} duration={20} delay={10}>
+                    <div style={{ width: 28, height: 28, borderRadius: 8, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,.1)', border: '1px solid #f3f4f6' }}>
+                      <CalendarIcon size={14} className="text-blue-400" />
+                    </div>
+                  </OrbitingCircles>
+
+                  {/* Outer Orbit */}
+                  <OrbitingCircles radius={95} duration={30} reverse>
+                    <div style={{ width: 28, height: 28, borderRadius: 8, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,.1)', border: '1px solid #f3f4f6' }}>
+                      <CalendarIcon size={14} className="text-green-400" />
+                    </div>
+                  </OrbitingCircles>
+                </div>
+              </div>
+
+              {/* Card 02 */}
+              <div className="reveal s2 feature-card" style={{ textAlign: 'left' }}>
+                <span className="step-badge" style={{ marginBottom: 20, display: 'inline-flex' }}>02</span>
+                <h3>Set your availability</h3>
+                <p>Want to block off weekends? Set up any buffers? We make that easy.</p>
+                <div style={{ marginTop: 24 }}>
+                  {[
+                    { day: 'Mon', on: true,  from: '8:30 am', to: '5:00 pm' },
+                    { day: 'Tue', on: false, from: '9:00 am', to: '6:30 pm' },
+                    { day: 'Wed', on: true,  from: '10:00 am', to: '7:00 pm' },
+                  ].map(r => (
+                    <div key={r.day} className="avail-row">
+                      <div className={`toggle ${r.on ? 'on' : 'off'}`} />
+                      <span style={{ width: 28, fontSize: 13, fontWeight: 600, color: r.on ? '#111827' : '#9ca3af' }}>{r.day}</span>
+                      <span className="time-input">{r.from}</span>
+                      <span style={{ color: '#9ca3af', fontSize: 12 }}>–</span>
+                      <span className="time-input">{r.to}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Card 03 */}
+              <div className="reveal s3 feature-card" style={{ textAlign: 'left' }}>
+                <span className="step-badge" style={{ marginBottom: 20, display: 'inline-flex' }}>03</span>
+                <h3>Choose how to meet</h3>
+                <p>It could be a video chat, phone call, or a walk in the park!</p>
+                <div style={{ marginTop: 28, background: '#f9fafb', borderRadius: 14, border: '1px solid #f0f0f0', padding: '12px', overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
+                    {['#e5e7eb','#e5e7eb','#e5e7eb'].map((c,i)=><div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: c }} />)}
+                  </div>
+                  <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 12 }}>
+                    {[0,1].map(i => (
+                      <div key={i} style={{ width: 60, height: 60, borderRadius: '50%', background: '#d1d5db', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="#9ca3af"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
+                    {[<Video size={14}/>, <Mic size={14}/>, <MessageSquare size={14}/>, <Monitor size={14}/>, <MoreHorizontal size={14}/>].map((icon,i) => (
+                      <div key={i} className="meet-icon">{icon}</div>
+                    ))}
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
 
-          {/* ── Stats row ── */}
-          <div className="mt-28 grid grid-cols-2 md:grid-cols-4 gap-8 text-center reveal">
-            {[
-              { value: 200, suffix: 'k+', label: 'Users worldwide' },
-              { value: 50,  suffix: 'M+', label: 'Meetings scheduled' },
-              { value: 65,  suffix: '+',  label: 'Languages' },
-              { value: 99,  suffix: '%',  label: 'Uptime SLA' },
-            ].map((s, i) => (
-              <div key={i} className={`reveal stagger-${i + 1}`}>
-                <p className="text-4xl font-black tracking-tight text-slate-900">
-                  <Counter to={s.value} suffix={s.suffix} />
-                </p>
-                <p className="text-sm text-slate-500 mt-1">{s.label}</p>
-              </div>
-            ))}
-          </div>
+          {/* ── Benefits ── */}
+          <div style={{ marginTop: 80, textAlign: 'center' }}>
+            <div className="reveal pill-btn" style={{ margin: '0 auto 20px' }}>
+              🎁 Benefits
+            </div>
+            <h2 className="reveal" style={{ fontSize: 'clamp(32px,4vw,52px)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: 14 }}>
+              Your all-purpose scheduling app
+            </h2>
+            <p className="reveal" style={{ fontSize: 16, color: '#6b7280', maxWidth: 480, margin: '0 auto 12px', lineHeight: 1.65 }}>
+              Discover a variety of our advanced features. Unlimited and free for individuals.
+            </p>
+            <div className="reveal" style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 44 }}>
+              <button className="main-btn dark">Get started <ArrowRight size={15} /></button>
+              <button className="main-btn light">Book a demo <ArrowRight size={15} /></button>
+            </div>
 
-          {/* ── Features grid ── */}
-          <div className="mt-40 text-center bg-slate-50 rounded-[3.5rem] px-8 py-24 border border-slate-100">
-            <h2 className="reveal text-4xl md:text-5xl font-bold tracking-tight mb-20">…and so much more!</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
-              {[
-                { icon: Layers, label: 'Accept payments' },
-                { icon: Video,  label: 'Built-in video' },
-                { icon: Code,   label: 'Short booking links' },
-                { icon: Lock,   label: 'Privacy first' },
-                { icon: Globe,  label: '65+ languages' },
-                { icon: Layers, label: 'Easy embeds' },
-                { icon: Layers, label: 'All your apps' },
-                { icon: Layers, label: 'Simple customization' },
-              ].map((item, id) => (
-                <div key={id}
-                  className={`reveal stagger-${id + 1} card-hover bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center gap-4 cursor-default`}>
-                  <item.icon className="w-8 h-8 text-slate-300" strokeWidth={1.5} />
-                  <span className="text-sm font-bold text-slate-700">{item.label}</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              {/* Benefit 1 */}
+              <div className="reveal s1 feature-card" style={{ textAlign: 'left' }}>
+                <h3>Avoid meeting overload</h3>
+                <p>Only get booked when you want to. Set daily, weekly or monthly limits and add buffers around your events to allow you to focus or take a break.</p>
+                <div style={{ marginTop: 24, border: '1px solid #e5e7eb', borderRadius: 14, padding: '20px', background: '#fafafa' }}>
+                  <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>Notice and buffers</div>
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 6 }}>Minimum notice</div>
+                    <select className="notice-select"><option>3 hours</option></select>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 6 }}>Buffer before event</div>
+                      <select className="notice-select"><option>15 mins</option></select>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 6 }}>Buffer after event</div>
+                      <select className="notice-select"><option>15 mins</option></select>
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 6 }}>Time-slot intervals</div>
+                    <select className="notice-select"><option>15 mins</option></select>
+                  </div>
                 </div>
-              ))}
+              </div>
+
+              {/* Benefit 2 */}
+              <div className="reveal s2 feature-card" style={{ textAlign: 'left' }}>
+                <h3>Stand out with a custom booking link</h3>
+                <p>Customize your booking link so it's short and easy to remember for your bookers. No more long, complicated links one can easily forget.</p>
+                <div style={{ marginTop: 24 }}>
+                  <div style={{ display: 'inline-block', padding: '8px 16px', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 14 }}>cal.com/ewa</div>
+                  <div style={{ border: '1px solid #e5e7eb', borderRadius: 14, padding: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#a78bfa,#6366f1)', flexShrink: 0 }} />
+                      <div>
+                        <div style={{ fontSize: 11, color: '#6b7280' }}>Ewa Michalak</div>
+                        <div style={{ fontSize: 15, fontWeight: 800 }}>Marketing Strategy Session</div>
+                      </div>
+                    </div>
+                    <p style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.5, marginBottom: 12 }}>Let's collaborate on campaigns, co-marketing opportunities, and learn how Cal.com is approaching growth and brand.</p>
+                    <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+                      {['15m','30m','45m','1h'].map(d => (
+                        <span key={d} className={`dur-pill ${d === '30m' ? 'active' : 'inactive'}`} style={{ fontSize: 12, padding: '4px 10px' }}>{d}</span>
+                      ))}
+                    </div>
+                    <div style={{ fontSize: 12, color: '#374151', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 14 }}>📹</span> Google Meet
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Globe size={12} color="#6b7280" /> Europe/Warsaw ▾
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Benefit 3 */}
+              <div className="reveal s3 feature-card" style={{ textAlign: 'left' }}>
+                <h3>Streamline your bookers' experience</h3>
+                <p>Let your bookers overlay their calendar, receive booking confirmations via text or email, get events added to their calendar, and allow them to reschedule with ease.</p>
+              </div>
+
+              {/* Benefit 4 */}
+              <div className="reveal s4 feature-card" style={{ textAlign: 'left' }}>
+                <h3>Reduce no-shows with automated meeting reminders</h3>
+                <p>Easily send sms or meeting reminder emails about bookings, and send automated follow-ups to gather any relevant information before the meeting.</p>
+              </div>
             </div>
           </div>
 
           {/* ── CTA ── */}
-          <div className="mt-40 text-center pb-12 reveal">
-            <h2 className="text-4xl font-bold mb-8 leading-snug">
-              Ready to streamline<br />your meetings?
-            </h2>
-            <Link to="/admin"
-              className="glow-btn inline-flex px-10 py-5 bg-slate-900 text-white rounded-2xl font-bold text-xl hover:bg-slate-800 transition-all duration-300 gap-4 items-center group shadow-2xl">
-              Get started for free
-              <ArrowRight className="w-6 h-6 group-hover:translate-x-1.5 transition-transform duration-200" />
-            </Link>
-            <p className="mt-6 text-slate-400 text-sm">Join 200,000+ users · No credit card required</p>
+          <div style={{ marginTop: 80, textAlign: 'center', paddingBottom: 80 }}>
+            <div className="reveal" style={{ background: '#fff', borderRadius: 24, border: '1px solid #e5e7eb', padding: '56px 48px' }}>
+              <h2 style={{ fontSize: 'clamp(28px,3.5vw,44px)', fontWeight: 900, letterSpacing: '-1px', marginBottom: 12 }}>
+                Ready to streamline your meetings?
+              </h2>
+              <p style={{ fontSize: 16, color: '#6b7280', marginBottom: 28 }}>Join 200,000+ users. No credit card required.</p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
+                <button className="main-btn dark" style={{ fontSize: 16, padding: '14px 28px' }}>Get started for free <ArrowRight size={16} /></button>
+                <button className="main-btn light" style={{ fontSize: 16, padding: '14px 28px' }}>Book a demo <ArrowRight size={16} /></button>
+              </div>
+            </div>
           </div>
         </main>
       </div>

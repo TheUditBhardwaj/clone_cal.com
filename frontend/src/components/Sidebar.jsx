@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { Clock, Calendar, BookOpen, LayoutDashboard, Users, AppWindow, GitBranch, Workflow, BarChart2, ChevronDown } from 'lucide-react';
 
 const mainNav = [
+  { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/admin/event-types', icon: Clock, label: 'Event Types' },
   { to: '/admin/bookings', icon: BookOpen, label: 'Bookings' },
   { to: '/admin/availability', icon: Calendar, label: 'Availability' },
@@ -34,8 +35,8 @@ export default function Sidebar({ onClose }) {
       {/* User Header */}
       <div className="px-3 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
         <button className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg hover:bg-[#1e1e1e] transition-colors group">
-          <div className="w-6 h-6 rounded-full bg-violet-600 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">U</div>
-          <span className="text-sm font-semibold text-[#d4d4d4] flex-1 text-left truncate">Udit Bhardwaj</span>
+          <div className="w-6 h-6 rounded-full bg-[#0070f3] flex items-center justify-center text-[10px] font-black text-white flex-shrink-0 shadow-[0_0_10px_rgba(0,112,243,0.3)]">S</div>
+          <span className="text-sm font-bold text-[#d4d4d4] flex-1 text-left truncate tracking-tight">Scaler</span>
           <ChevronDown className="w-3.5 h-3.5 text-[#555] group-hover:text-[#737373] transition-colors" />
         </button>
       </div>
@@ -56,7 +57,7 @@ export default function Sidebar({ onClose }) {
         <a href="/" className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-[#555] hover:bg-[#1e1e1e] hover:text-[#d4d4d4] transition-colors no-underline">
           View public page
         </a>
-        <p className="px-3 text-[10px] text-[#333] pt-1">© 2024 CloneCal, Inc.</p>
+        <p className="px-3 text-[10px] text-[#333] pt-1">© 2024 Scaler Inc.</p>
       </div>
     </div>
   );

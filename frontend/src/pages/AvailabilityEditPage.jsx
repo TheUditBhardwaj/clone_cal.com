@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Copy, Pencil, Plus, Trash2, X } from 'lucide-react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isToday, isBefore, isSameDay, parseISO } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isToday, isBefore, isSameDay, isAfter, parseISO } from 'date-fns';
 import { getScheduleById, createSchedule, updateSchedule, deleteSchedule, getUsers } from '../api';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const TIMEZONES = [
@@ -51,13 +52,60 @@ function TimeInput({ value, onChange }) {
 
 function OverrideCalendar({ onClose, onAdd }) {
   const [viewMonth, setViewMonth] = useState(startOfMonth(new Date()));
-  const [selected, setSelected] = useState(null);
+  const [rangeStart, setRangeStart] = useState(null);
+  const [rangeEnd, setRangeEnd] = useState(null);
   const [start, setStart] = useState('09:00');
   const [end, setEnd] = useState('17:00');
+  
   const s = startOfWeek(startOfMonth(viewMonth));
   const e = endOfWeek(endOfMonth(viewMonth));
   const days = eachDayOfInterval({ start: s, end: e });
   const today = new Date();
+
+  const handleDayClick = (day) => {
+    if (!rangeStart || (rangeStart && rangeEnd)) {
+      setRangeStart(day);
+      setRangeEnd(null);
+    } else {
+      if (isBefore(day, rangeStart)) {
+        setRangeStart(day);
+      } else {
+        setRangeEnd(day);
+      }
+    }
+  };
+
+  const isSelected = (day) => {
+    if (rangeStart && isSameDay(day, rangeStart)) return true;
+    if (rangeEnd && isSameDay(day, rangeEnd)) return true;
+    if (rangeStart && rangeEnd && isAfter(day, rangeStart) && isBefore(day, rangeEnd)) return true;
+    return false;
+  };
+
+  const isInRange = (day) => {
+    if (!rangeStart || !rangeEnd) return false;
+    return (isAfter(day, rangeStart) || isSameDay(day, rangeStart)) && (isBefore(day, rangeEnd) || isSameDay(day, rangeEnd));
+  };
+
+  const getRangeLabel = () => {
+    if (!rangeStart) return 'Select a date';
+    if (!rangeEnd) return format(rangeStart, 'EEEE, MMMM d');
+    if (isSameMonth(rangeStart, rangeEnd)) {
+      return `${format(rangeStart, 'MMMM d')} – ${format(rangeEnd, 'd, yyyy')}`;
+    }
+    return `${format(rangeStart, 'MMM d')} – ${format(rangeEnd, 'MMM d, yyyy')}`;
+  };
+
+  const handleAdd = () => {
+    const targetDates = rangeStart && rangeEnd 
+      ? eachDayOfInterval({ start: rangeStart, end: rangeEnd })
+      : [rangeStart];
+    
+    targetDates.forEach(d => {
+      onAdd({ date: format(d, 'yyyy-MM-dd'), start, end });
+    });
+  };
+
   return (
     <div className="modal-backdrop" style={{ background: 'rgba(0,0,0,.85)' }} onClick={(ev) => ev.target === ev.currentTarget && onClose()}>
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-xl)', padding: 32, width: 480, animation: 'fade-in .15s ease' }}>
@@ -80,34 +128,55 @@ function OverrideCalendar({ onClose, onAdd }) {
           {days.map((day) => {
             const past = isBefore(day, today) && !isToday(day);
             const out = !isSameMonth(day, viewMonth);
-            const sel = selected && isSameDay(day, selected);
+            const isStart = rangeStart && isSameDay(day, rangeStart);
+            const isEnd = rangeEnd && isSameDay(day, rangeEnd);
+            const inRange = isInRange(day);
             const cur = isToday(day);
+            const highlighted = isStart || isEnd || inRange;
+            
             return (
-              <button key={day.toISOString()} disabled={past || out}
-                onClick={() => setSelected(day)}
+              <motion.button 
+                key={day.toISOString()} 
+                disabled={past || out}
+                onClick={() => handleDayClick(day)}
+                whileHover={!(past || out) ? { scale: 1.05 } : {}}
+                whileTap={!(past || out) ? { scale: 0.95 } : {}}
                 style={{
-                  aspectRatio: '1', borderRadius: 8, border: 'none',
+                  aspectRatio: '1', 
+                  borderRadius: highlighted 
+                    ? (isStart && !isEnd && rangeEnd ? '8px 0 0 8px' : isEnd && !isStart ? '0 8px 8px 0' : (inRange && !isStart && !isEnd ? '0' : '8px'))
+                    : '8px', 
+                  border: 'none',
                   cursor: past || out ? 'default' : 'pointer',
-                  background: sel ? 'var(--bg-hover)' : cur ? 'var(--bg-hover)' : 'transparent',
-                  color: out ? 'var(--text-muted)' : past ? 'var(--text-muted)' : 'var(--text-primary)',
-                  fontWeight: sel ? 700 : 400, fontSize: 13, position: 'relative',
-                }}>
+                  background: highlighted ? '#fff' : cur ? 'var(--bg-hover)' : 'transparent',
+                  color: highlighted ? '#000' : out || past ? 'var(--text-muted)' : 'var(--text-primary)',
+                  fontWeight: highlighted ? 700 : 400, fontSize: 13, position: 'relative',
+                  opacity: out && !highlighted ? 0.3 : 1,
+                  transition: 'all 0.1s'
+                }}
+              >
                 {format(day, 'd')}
-                {cur && <span style={{ position: 'absolute', bottom: 3, left: '50%', transform: 'translateX(-50%)', width: 4, height: 4, borderRadius: '50%', background: 'var(--accent)' }} />}
-              </button>
+                {cur && !highlighted && <span style={{ position: 'absolute', bottom: 3, left: '50%', transform: 'translateX(-50%)', width: 4, height: 4, borderRadius: '50%', background: 'var(--accent)' }} />}
+                {highlighted && (
+                  <motion.div 
+                    layoutId="ov_activeDay"
+                    style={{ position: 'absolute', inset: 0, borderRadius: 'inherit', border: '1px solid rgba(255,255,255,0.2)', zIndex: -1 }}
+                  />
+                )}
+              </motion.button>
             );
           })}
         </div>
-        {selected && (
+        {rangeStart && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, padding: '12px 16px', background: 'var(--bg-hover)', borderRadius: 'var(--radius-md)' }}>
-            <span style={{ fontSize: 13, color: 'var(--text-secondary)', flex: 1 }}>{format(selected, 'EEEE, MMMM d')}</span>
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)', flex: 1, fontWeight: 600 }}>{getRangeLabel()}</span>
             <TimeInput value={start} onChange={setStart} />
             <span style={{ color: 'var(--text-muted)' }}>–</span>
             <TimeInput value={end} onChange={setEnd} />
           </div>
         )}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          {selected && <button className="btn-primary" onClick={() => { onAdd({ date: format(selected, 'yyyy-MM-dd'), start, end }); }}>Add override</button>}
+          {rangeStart && <button className="btn-primary" onClick={handleAdd}>Add override</button>}
           <button className="btn-secondary" onClick={onClose}>Close</button>
         </div>
       </div>

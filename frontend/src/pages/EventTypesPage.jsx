@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { getEventTypes, createEventType, updateEventType, deleteEventType, getUsers } from '../api';
 import { Plus, Clock, Pencil, Trash2, Search, MoreHorizontal, Copy, Code2 } from 'lucide-react';
 
@@ -140,6 +141,16 @@ function EventMenu({ et, onEdit, onDelete, onDuplicate, onEmbed }) {
           </button>
           <button
             className="w-full flex items-center gap-3 px-3 py-2 text-xs sm:text-sm text-[#a3a3a3] hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left"
+            onClick={() => {
+              const url = `${window.location.origin}/book/${et.slug}`;
+              navigator.clipboard.writeText(url).then(() => alert('Booking link copied!'));
+              setOpen(false);
+            }}
+          >
+            <Copy className="w-3.5 h-3.5" /> <span>Copy Link</span>
+          </button>
+          <button
+            className="w-full flex items-center gap-3 px-3 py-2 text-xs sm:text-sm text-[#a3a3a3] hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left"
             onClick={() => { onDuplicate(); setOpen(false); }}
           >
             <Copy className="w-3.5 h-3.5" /> <span>Duplicate</span>
@@ -183,6 +194,17 @@ export default function EventTypesPage() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [hidden, setHidden] = useState({});
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('new') === 'true') {
+      setShowModal(true);
+      // Clean up URL after opening modal
+      navigate('/admin/event-types', { replace: true });
+    }
+  }, [location.search, navigate]);
 
   const fetch = async () => {
     try {
