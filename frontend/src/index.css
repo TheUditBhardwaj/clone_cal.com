@@ -57,6 +57,20 @@
   select option { background: #1c1c1c; }
 
   label { font-size: 12px; font-weight: 500; color: var(--text-secondary); display: block; margin-bottom: 5px; }
+
+  /* Refined Time Input */
+  .time-input-refined::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.4;
+    cursor: pointer;
+  }
+  .time-input-refined:hover {
+    border-color: var(--border-light) !important;
+  }
+  .time-input-refined:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px rgba(109,40,217,0.2) !important;
+  }
 }
 
 /* ── Shared Button Styles ── */

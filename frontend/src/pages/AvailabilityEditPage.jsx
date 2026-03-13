@@ -39,10 +39,12 @@ function Toggle({ checked, onChange }) {
 function TimeInput({ value, onChange }) {
   return (
     <input type="time" value={value} onChange={(e) => onChange(e.target.value)}
+      className="time-input-refined"
       style={{
-        width: 90, padding: '5px 10px', background: 'var(--bg-input)',
+        width: 104, padding: '7px 12px', background: 'var(--bg-input)',
         border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
         color: 'var(--text-primary)', fontSize: 13, fontVariantNumeric: 'tabular-nums',
+        outline: 'none', transition: 'all 0.1s'
       }} />
   );
 }
@@ -315,36 +317,36 @@ export default function AvailabilityEditPage() {
                   border: dayObj.enabled ? '1px solid transparent' : '1px solid var(--border)',
                   transition: 'all 0.2s'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: 140, paddingTop: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: 150, paddingTop: 4 }}>
                     <Toggle checked={dayObj.enabled} onChange={() => toggleDay(di)} />
-                    <span style={{ fontSize: 14, fontWeight: 500, color: dayObj.enabled ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: dayObj.enabled ? 'var(--text-primary)' : 'var(--text-muted)', letterSpacing: '-0.01em' }}>
                       {DAYS[di]}
                     </span>
                   </div>
                   <div style={{ flex: 1 }}>
                     {!dayObj.enabled ? (
-                      <span style={{ fontSize: 13, color: 'var(--text-muted)', paddingTop: 6, display: 'block' }}>Unavailable</span>
+                      <span style={{ fontSize: 13, color: 'var(--text-muted)', paddingTop: 8, display: 'block', fontWeight: 500 }}>Unavailable</span>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {dayObj.slots.map((slot, si) => (
                           <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.03)', padding: '2px 4px', borderRadius: 8 }}>
                               <TimeInput value={slot.start} onChange={(v) => updateSlot(di, si, 'start', v)} />
-                              <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>–</span>
+                              <span style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: 12 }}>TO</span>
                               <TimeInput value={slot.end} onChange={(v) => updateSlot(di, si, 'end', v)} />
                             </div>
                             
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                               {si === 0 && (
                                 <>
-                                  <button className="btn-icon" style={{ width: 28, height: 28 }} onClick={() => addSlot(di)} title="Add slot"><Plus className="w-4 h-4" /></button>
-                                  <button className="btn-icon" style={{ width: 28, height: 28 }} onClick={() => copyDay(di)} title="Copy to all days"><Copy className="w-3.5 h-3.5" /></button>
+                                  <button className="btn-icon" style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border)' }} onClick={() => addSlot(di)} title="Add slot"><Plus className="w-4 h-4" /></button>
+                                  <button className="btn-icon" style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border)' }} onClick={() => copyDay(di)} title="Copy to all days"><Copy className="w-3.5 h-3.5" /></button>
                                 </>
                               )}
                               {si > 0 && (
-                                <button className="btn-icon" style={{ width: 28, height: 28 }}
+                                <button className="btn-icon" style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border)', color: '#ef4444' }}
                                   onClick={() => setSchedule(prev => ({ ...prev, days: prev.days.map((d, dIdx) => dIdx !== di ? d : { ...d, slots: d.slots.filter((_, sIdx) => sIdx !== si) }) }))}>
-                                  <X className="w-4 h-4" />
+                                  <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                               )}
                             </div>
