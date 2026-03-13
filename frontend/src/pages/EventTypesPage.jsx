@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getEventTypes, createEventType, updateEventType, deleteEventType, getUsers } from '../api';
-import { Plus, Clock, Pencil, Trash2, Search, MoreHorizontal, Copy, Code2 } from 'lucide-react';
+import { Plus, Clock, Pencil, Trash2, Search, MoreHorizontal, Copy, Code2, ExternalLink, Link as LinkIcon } from 'lucide-react';
 
 /* ──────────── Modal ──────────── */
 /* ──────────── Modal ──────────── */
@@ -125,8 +125,8 @@ function EventMenu({ et, onEdit, onDelete, onDuplicate, onEmbed }) {
   return (
     <div ref={ref} className="relative inline-block text-left">
       <button 
-        className={`flex items-center justify-center w-9 h-9 border border-[#2a2a2a] rounded-lg transition-all
-          ${open ? 'bg-[#2a2a2a] text-white' : 'bg-white/[0.03] text-[#888] hover:bg-white/[0.08] hover:text-white hover:border-[#3a3a3a]'}
+        className={`flex items-center justify-center w-8 h-8 border border-[#1f1f1f] rounded-md transition-all
+          ${open ? 'bg-white/10 text-white' : 'bg-transparent text-[#888] hover:bg-white/5 hover:text-white'}
         `}
         onClick={() => setOpen(!open)}>
         <MoreHorizontal className="w-4 h-4" />
@@ -267,22 +267,22 @@ export default function EventTypesPage() {
 
   return (
     <div className="animate-in pb-12" style={{ minHeight: '100vh', background: 'var(--bg-app)', color: 'var(--text-primary)' }}>
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 sm:mb-12">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-1 sm:mb-2">Event types</h1>
             <p className="text-xs sm:text-sm text-[var(--text-secondary)]">Configure different events for people to book on your calendar.</p>
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] opacity-60" />
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div className="relative group">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#666] group-focus-within:text-white transition-colors" />
               <input value={search} onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search"
-                className="w-full sm:w-[220px] md:w-[280px] bg-[#111] border border-[#222] rounded-xl h-10 pl-10 pr-4 text-sm outline-none focus:border-[var(--accent)] transition-colors" />
+                className="w-full sm:w-[180px] md:w-[220px] bg-black border border-[#1f1f1f] rounded-md h-9 pl-9 pr-4 text-sm text-white outline-none focus:border-[#444] transition-all" />
             </div>
-            <button className="btn-primary whitespace-nowrap px-6 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2" onClick={() => setShowModal(true)}>
-              <Plus className="w-4 h-4" /> New
+            <button className="bg-white text-black whitespace-nowrap px-4 py-1.5 rounded-md font-semibold text-sm flex items-center justify-center gap-1.5 hover:bg-white/90 transition-colors" onClick={() => setShowModal(true)}>
+              <Plus className="w-3.5 h-3.5" /> New
             </button>
           </div>
         </div>
@@ -296,11 +296,11 @@ export default function EventTypesPage() {
 
           <div className="flex flex-col gap-3 sm:gap-4 overflow-visible">
             {loading ? (
-              <div className="p-20 flex flex-col items-center justify-center bg-white/[0.01] border border-[#1f1f1f] rounded-2xl animate-pulse text-white/30">
+              <div className="p-20 flex flex-col items-center justify-center bg-white/[0.01] border border-[#1f1f1f] rounded-lg animate-pulse text-white/30">
                 Loading event types…
               </div>
             ) : filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 px-6 text-center bg-white/[0.01] border border-[#1f1f1f] border-dashed rounded-2xl">
+              <div className="flex flex-col items-center justify-center py-20 px-6 text-center bg-white/[0.01] border border-[#1f1f1f] border-dashed rounded-lg">
                 <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6">
                   <Clock className="w-8 h-8 text-[var(--text-muted)] opacity-40" />
                 </div>
@@ -310,42 +310,55 @@ export default function EventTypesPage() {
                 </p>
               </div>
             ) : (
-              filtered.map((et) => (
-                <div key={et.id} 
-                  className="group flex flex-row items-center justify-between p-4 sm:p-5 bg-white/[0.01] border border-[#1f1f1f] rounded-xl hover:bg-white/[0.03] hover:border-[#2a2a2a] transition-all duration-300 cursor-pointer relative shadow-sm hover:shadow-xl" 
-                  onClick={() => setEditItem(et)}>
-                  
-                  {/* Event Details */}
-                  <div className="flex flex-col gap-1 min-w-0 pr-4">
-                    <div className="flex items-center gap-2 overflow-hidden">
-                      <span className="text-sm sm:text-[15px] font-bold text-white truncate tracking-tight group-hover:text-[var(--accent)] transition-colors">{et.title}</span>
-                      <span className="text-[10px] sm:text-[11px] text-[var(--text-muted)] font-medium shrink-0 opacity-70">/{et.slug}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="inline-flex items-center gap-1.5 text-[var(--text-secondary)]">
-                        <Clock className="w-3.5 h-3.5 opacity-60" />
-                        <span className="text-xs font-semibold">{et.duration}m</span>
+              <div className="bg-black border border-[#1f1f1f] rounded-lg overflow-hidden">
+                {filtered.map((et, index) => (
+                  <div key={et.id} 
+                    className={`group flex items-center justify-between py-3 px-4 hover:bg-[#111] transition-colors cursor-pointer ${index !== filtered.length - 1 ? 'border-b border-[#1f1f1f]' : ''}`} 
+                    onClick={() => setEditItem(et)}>
+                    
+                    {/* Left side: Details */}
+                    <div className="flex flex-col gap-1 min-w-0 pr-4">
+                      <div className="flex flex-col">
+                        <span className="text-[14px] font-semibold text-white tracking-tight">{et.title}</span>
+                        <span className="text-[13px] text-[#666] font-normal truncate mt-0.5">/udit-bhardwaj-dorkjw/{et.slug}</span>
                       </div>
-                      <div className="w-1 h-1 rounded-full bg-[var(--text-muted)] opacity-30" />
-                      <span className="text-xs font-medium text-[var(--text-muted)]">1-on-1</span>
-                      {hidden[et.id] && (
-                        <span className="ml-1 px-1.5 py-0.5 rounded-md bg-orange-500/10 text-[9px] font-black uppercase tracking-widest text-orange-500/80 border border-orange-500/10">
-                          Hidden
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <div className="inline-flex items-center gap-1.5 px-1.5 py-0.5 border border-[#1f1f1f] bg-black text-white rounded">
+                          <Clock className="w-3 h-3 opacity-60" />
+                          <span className="text-[10px] font-medium">{et.duration}m</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Actions Section */}
-                  <div className="flex items-center gap-4 sm:gap-6 shrink-0" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center" title={hidden[et.id] ? "Enable event" : "Disable event"}>
-                      <Toggle
-                        checked={!!hidden[et.id]}
-                        onChange={() => setHidden((p) => ({ ...p, [et.id]: !p[et.id] }))}
-                      />
-                    </div>
-                    <div className="h-4 w-px bg-[#1f1f1f]" />
-                    <div className="relative">
+                    {/* Right side: Grouped Controls */}
+                    <div className="flex items-center gap-2 bg-neutral-900 border border-[#1f1f1f] rounded-lg px-2 py-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center pr-1 border-r border-[#1f1f1f] mr-1 gap-2">
+                        {hidden[et.id] && (
+                          <span className="text-[12px] text-[#666] font-medium">Hidden</span>
+                        )}
+                        <Toggle
+                          checked={!hidden[et.id]}
+                          onChange={() => setHidden((p) => ({ ...p, [et.id]: !p[et.id] }))}
+                        />
+                      </div>
+                      
+                      <button 
+                        onClick={() => window.open(`/book/${et.slug}`, '_blank')}
+                        className="w-7 h-7 flex items-center justify-center rounded-md text-[#888] hover:text-white hover:bg-white/5 transition-colors"
+                        title="Open link">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </button>
+                      
+                      <button 
+                        onClick={() => {
+                          const url = `${window.location.origin}/book/${et.slug}`;
+                          navigator.clipboard.writeText(url).then(() => alert('Copied!'));
+                        }}
+                        className="w-7 h-7 flex items-center justify-center rounded-md text-[#888] hover:text-white hover:bg-white/5 transition-colors"
+                        title="Copy link">
+                        <LinkIcon className="w-3.5 h-3.5" />
+                      </button>
+                      
                       <EventMenu
                         et={et}
                         onEdit={() => setEditItem(et)}
@@ -355,8 +368,8 @@ export default function EventTypesPage() {
                       />
                     </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         </div>

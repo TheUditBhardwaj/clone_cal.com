@@ -72,7 +72,7 @@ export default function AvailabilityPage() {
 
   return (
     <div className="animate-in pb-12" style={{ minHeight: '100vh', background: 'var(--bg-app)', color: 'var(--text-primary)' }}>
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 sm:mb-12">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-1 sm:mb-2">Availability</h1>
@@ -90,50 +90,63 @@ export default function AvailabilityPage() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col">
           {loading ? (
-            <div className="empty-state"><p>Loading…</p></div>
+            <div className="p-20 flex flex-col items-center justify-center bg-white/[0.01] border border-[#1f1f1f] rounded-lg animate-pulse text-white/30">
+              Loading schedules…
+            </div>
           ) : schedules.length === 0 ? (
-            <div className="empty-state border border-dashed border-[var(--border)] rounded-2xl py-12">
-              <Globe className="w-10 h-10 mb-4 text-[var(--text-muted)]" />
+            <div className="flex flex-col items-center justify-center py-20 px-6 text-center bg-white/[0.01] border border-[#1f1f1f] border-dashed rounded-lg">
+              <Globe className="w-10 h-10 mb-4 text-[var(--text-muted)] opacity-40" />
               <p className="text-sm text-[var(--text-secondary)] mb-6">No availability schedules yet.</p>
-              <button className="btn-primary px-6 py-2.5 rounded-xl font-bold text-sm" onClick={() => navigate('/admin/availability/edit/new')}>
+              <button className="bg-white text-black px-6 py-2.5 rounded-md font-bold text-sm flex items-center gap-2 hover:bg-white/90 transition-colors" onClick={() => navigate('/admin/availability/edit/new')}>
                 <Plus className="w-4 h-4" /> Create schedule
               </button>
             </div>
           ) : (
-            schedules.map((s) => (
-              <div key={s.id}
-                className="group flex items-center justify-between p-5 sm:p-7 md:p-8 rounded-2xl border border-[#1f1f1f] hover:border-[var(--border-light)] hover:bg-white/[0.02] transition-all duration-200 cursor-pointer"
-                onClick={() => navigate(`/admin/availability/edit/${s.id}`)}>
-                <div className="flex flex-col gap-1.5 flex-1 min-w-0 pr-4">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-sm sm:text-base font-bold text-[var(--text-primary)] truncate">{s.name}</span>
-                    {s.isDefault && (
-                      <span className="text-[9px] sm:text-[10px] font-bold bg-[#2a2a2a] text-[var(--text-secondary)] px-2 py-0.5 rounded-md uppercase tracking-wider">Default</span>
-                    )}
-                  </div>
-                  <p className="text-xs sm:text-sm text-[var(--text-secondary)] truncate">{buildSummary(s)}</p>
-                  <div className="flex items-center gap-1.5 mt-0.5 opacity-60">
-                    <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                    <span className="text-[10px] sm:text-xs">{s.timezone}</span>
-                  </div>
-                </div>
-                <div className="relative">
-                  <button className="btn-icon w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-[#1f1f1f] group-hover:border-[var(--border)] transition-colors" 
-                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === s.id ? null : s.id); }}>
-                    <MoreHorizontal className="w-4 h-4" />
-                  </button>
-                  {openMenuId === s.id && (
-                    <div ref={menuRef} className="dropdown-menu right-0 top-full mt-2 min-w-[140px] z-20">
-                      <div className="dropdown-item danger text-xs sm:text-sm py-2" onClick={(e) => handleDelete(s.id, e)}>
-                        <Trash2 className="w-4 h-4" /> Delete
-                      </div>
+            <div className="bg-black border border-[#1f1f1f] rounded-lg overflow-hidden">
+              {schedules.map((s, index) => (
+                <div key={s.id}
+                  className={`group flex items-center justify-between py-3 px-4 hover:bg-[#111] transition-colors cursor-pointer ${index !== schedules.length - 1 ? 'border-b border-[#1f1f1f]' : ''}`}
+                  onClick={() => navigate(`/admin/availability/edit/${s.id}`)}>
+                  
+                  {/* Left side: Details */}
+                  <div className="flex flex-col gap-1 min-w-0 pr-4">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-[14px] font-semibold text-white tracking-tight">{s.name}</span>
+                      {s.isDefault && (
+                        <span className="text-[10px] font-bold bg-[#1a1a1a] text-[#666] px-1.5 py-0.5 rounded border border-[#1f1f1f] uppercase tracking-wider">Default</span>
+                      )}
                     </div>
-                  )}
+                    <p className="text-[13px] text-[#666] font-normal truncate">{buildSummary(s)}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5 text-[#666]">
+                      <Globe className="w-3 h-3" />
+                      <span className="text-[11px]">{s.timezone}</span>
+                    </div>
+                  </div>
+
+                  {/* Right side: Grouped Controls */}
+                  <div className="flex items-center gap-2 bg-neutral-900 border border-[#1f1f1f] rounded-lg px-2 py-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <div className="relative">
+                      <button className="w-7 h-7 flex items-center justify-center rounded-md text-[#888] hover:text-white hover:bg-white/5 transition-colors" 
+                        onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === s.id ? null : s.id); }}>
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+                      {openMenuId === s.id && (
+                        <div ref={menuRef} className="absolute right-0 top-full mt-2 z-50 min-w-[140px] p-1 bg-[#161616] border border-[#1f1f1f] rounded-lg shadow-xl animate-in fade-in">
+                          <button
+                            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded-md transition-colors text-left font-medium"
+                            onClick={(e) => handleDelete(s.id, e)}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> <span>Delete</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
 

@@ -137,22 +137,28 @@
 .page-body { padding: 24px 32px; }
 
 /* ── Toggle Switch ── */
-.toggle { position: relative; display: inline-block; width: 36px; height: 20px; cursor: pointer; }
+.toggle { position: relative; display: inline-block; width: 34px; height: 18px; cursor: pointer; }
 .toggle input { opacity: 0; width: 0; height: 0; }
 .toggle-track {
   position: absolute; inset: 0;
-  background: var(--border-light);
+  background: #2a2a2a;
   border-radius: 99px;
-  transition: background .2s;
+  transition: background .15s;
+  border: 1px solid #333;
 }
-.toggle input:checked + .toggle-track { background: var(--green-dot); }
+.toggle input:checked + .toggle-track { background: #fff; border-color: #fff; }
 .toggle-thumb {
   position: absolute; left: 2px; top: 2px;
-  width: 16px; height: 16px; border-radius: 50%;
-  background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3);
-  transition: transform .2s;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #fff;
+  transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
-.toggle input:checked ~ .toggle-thumb { transform: translateX(16px); }
+.toggle input:checked ~ .toggle-thumb { 
+  transform: translateX(16px); 
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
 
 /* ── Empty state ── */
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 24px; gap: 12px; }

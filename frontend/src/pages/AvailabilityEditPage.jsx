@@ -362,7 +362,7 @@ export default function AvailabilityEditPage() {
 
       {/* Body */}
       <div className="flex-1 overflow-auto flex flex-col lg:flex-row lg:justify-center">
-        <div className="w-full max-w-[1400px] flex flex-col lg:flex-row">
+        <div className="w-full max-w-[1600px] flex flex-col lg:flex-row">
           {/* Main column */}
           <div className="flex-1 p-6 sm:p-10 lg:p-12 border-b lg:border-b-0 lg:border-r border-[var(--border)]">
             <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>Weekly Hours</h3>
