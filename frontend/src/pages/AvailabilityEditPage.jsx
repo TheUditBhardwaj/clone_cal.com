@@ -41,7 +41,7 @@ function TimeInput({ value, onChange }) {
     <input type="time" value={value} onChange={(e) => onChange(e.target.value)}
       className="time-input-refined"
       style={{
-        width: 104, padding: '7px 12px', background: 'var(--bg-input)',
+        width: 126, padding: '8px 12px', background: 'var(--bg-input)',
         border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
         color: 'var(--text-primary)', fontSize: 13, fontVariantNumeric: 'tabular-nums',
         outline: 'none', transition: 'all 0.1s'
@@ -310,10 +310,10 @@ export default function AvailabilityEditPage() {
                 <div key={di} style={{ 
                   display: 'flex', 
                   alignItems: 'flex-start', 
-                  gap: 20, 
-                  padding: '12px 16px', 
+                  gap: 32, 
+                  padding: '16px 20px', 
                   borderRadius: 12,
-                  background: dayObj.enabled ? 'transparent' : 'rgba(255,255,255,0.02)',
+                  background: dayObj.enabled ? 'transparent' : 'rgba(255,255,255,0.01)',
                   border: dayObj.enabled ? '1px solid transparent' : '1px solid var(--border)',
                   transition: 'all 0.2s'
                 }}>
@@ -330,9 +330,9 @@ export default function AvailabilityEditPage() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {dayObj.slots.map((slot, si) => (
                           <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.03)', padding: '2px 4px', borderRadius: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                               <TimeInput value={slot.start} onChange={(v) => updateSlot(di, si, 'start', v)} />
-                              <span style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: 12 }}>TO</span>
+                              <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>–</span>
                               <TimeInput value={slot.end} onChange={(v) => updateSlot(di, si, 'end', v)} />
                             </div>
                             
