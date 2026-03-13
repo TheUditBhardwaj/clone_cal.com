@@ -217,78 +217,113 @@ export default function BookingPage() {
   if (error) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fafafa', color: '#ef4444', fontSize: 13 }}>{error}</div>;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #e5e5e5', boxShadow: '0 4px 24px rgba(0,0,0,.06)', overflow: 'hidden', width: '100%', maxWidth: booked ? 480 : 860, display: 'flex' }}>
-
-        {/* Left panel – Event Info */}
-        {!booked && (
-          <div style={{ width: 280, flexShrink: 0, borderRight: '1px solid #e5e5e5', padding: 32, background: '#fff' }}>
-            {/* Avatar */}
-            <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#6d28d9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 16, marginBottom: 16 }}>U</div>
-            <p style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Udit Bhardwaj</p>
-            <h1 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a', lineHeight: 1.2, marginBottom: 20 }}>{eventType.title}</h1>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#555', fontSize: 13 }}>
-                <Clock className="w-4 h-4" style={{ flexShrink: 0 }} />
-                <span>{eventType.duration} minutes</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#555', fontSize: 13 }}>
-                <Video className="w-4 h-4" style={{ flexShrink: 0 }} />
-                <span>Google Meet / Video call</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#555', fontSize: 13 }}>
-                <Globe className="w-4 h-4" style={{ flexShrink: 0 }} />
-                <span>Asia/Kolkata</span>
-              </div>
-            </div>
-
-            {eventType.description && (
-              <p style={{ marginTop: 24, fontSize: 13, color: '#888', lineHeight: 1.6, borderTop: '1px solid #f0f0f0', paddingTop: 16 }}>
-                {eventType.description}
-              </p>
-            )}
-
-            {/* Duration pills */}
-            <div style={{ marginTop: 24, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {[15, 30, 45, 60].map(d => (
-                <span key={d} style={{ padding: '4px 10px', borderRadius: 99, border: '1px solid', fontSize: 12, fontWeight: d === eventType.duration ? 700 : 400, background: d === eventType.duration ? '#1a1a1a' : '#fff', color: d === eventType.duration ? '#fff' : '#555', borderColor: d === eventType.duration ? '#1a1a1a' : '#e5e5e5' }}>
-                  {d}m
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Right panel – Calendar / Slots / Form */}
-        <div style={{ flex: 1, padding: booked ? 0 : 32 }}>
-          {booked ? (
-            <SuccessScreen eventType={eventType} date={selectedDate} slot={selectedSlot} />
-          ) : selectedSlot ? (
-            <BookingForm slot={selectedSlot} eventType={eventType} date={selectedDate}
-              onBack={() => setSelectedSlot(null)} onSuccess={() => setBooked(true)} />
-          ) : (
-            <div style={{ display: 'flex', gap: 32 }}>
-              {/* Calendar */}
-              <div style={{ flex: 1 }}>
-                <Calendar selectedDate={selectedDate} onSelect={setSelectedDate} eventType={eventType} />
+    <div className="min-h-screen bg-[#fafafa] flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans selection:bg-[#1a1a1a] selection:text-white">
+      <div className={`
+        relative w-full bg-white rounded-2xl border border-[#e5e5e5] shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all duration-500 ease-in-out
+        ${booked ? 'max-w-[480px]' : 'max-w-[960px]'}
+      `}>
+        <div className="flex flex-col lg:flex-row h-full">
+          {/* Left panel – Event Info */}
+          {!booked && (
+            <div className="w-full lg:w-[320px] lg:border-r border-[#e5e5e5] p-6 sm:p-8 lg:p-10 bg-white">
+              {/* Header Info */}
+              <div className="flex items-center lg:flex-col lg:items-start gap-4 mb-6 sm:mb-8">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#1a1a1a] flex items-center justify-center text-white font-extrabold text-sm sm:text-base border-4 border-white shadow-xl ring-1 ring-[#1a1a1a]/5">
+                  U
+                </div>
+                <div>
+                  <p className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[#888] mb-0.5 sm:mb-1">Udit Bhardwaj</p>
+                  <h1 className="text-xl sm:text-2xl font-black text-[#1a1a1a] leading-tight tracking-tight">{eventType.title}</h1>
+                </div>
               </div>
 
-              {/* Time slots */}
-              {selectedDate && (
-                <div style={{ width: 160, flexShrink: 0 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#1a1a1a', marginBottom: 12 }}>
-                    {format(selectedDate, 'EEE, MMM d')}
+              {/* Details List */}
+              <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 sm:gap-6">
+                <div className="flex items-center gap-3 text-[#555] group">
+                  <div className="w-8 h-8 rounded-lg bg-[#f5f5f5] flex items-center justify-center group-hover:bg-[#1a1a1a] group-hover:text-white transition-colors">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-semibold">{eventType.duration} minutes</span>
+                </div>
+                <div className="flex items-center gap-3 text-[#555] group">
+                  <div className="w-8 h-8 rounded-lg bg-[#f5f5f5] flex items-center justify-center group-hover:bg-[#1a1a1a] group-hover:text-white transition-colors">
+                    <Video className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-semibold">Video meeting</span>
+                </div>
+                <div className="flex items-center gap-3 text-[#555] group hidden sm:flex">
+                  <div className="w-8 h-8 rounded-lg bg-[#f5f5f5] flex items-center justify-center group-hover:bg-[#1a1a1a] group-hover:text-white transition-colors">
+                    <Globe className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-semibold">Asia/Kolkata</span>
+                </div>
+              </div>
+
+              {eventType.description && (
+                <div className="mt-8 pt-8 border-t border-[#f0f0f0]">
+                  <p className="text-xs sm:text-sm text-[#666] leading-relaxed font-medium">
+                    {eventType.description}
                   </p>
-                  {slotsLoading ? (
-                    <p style={{ fontSize: 13, color: '#aaa' }}>Loading…</p>
-                  ) : (
-                    <TimeGrid slots={slots} onSelect={setSelectedSlot} />
-                  )}
                 </div>
               )}
+
+              {/* Quick Options */}
+              <div className="mt-8 flex flex-wrap gap-2">
+                {[15, 30, 45, 60].map(d => (
+                  <span key={d} className={`
+                    px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all duration-200 cursor-default
+                    ${d === eventType.duration 
+                      ? 'bg-[#1a1a1a] text-white shadow-lg' 
+                      : 'bg-[#f5f5f5] text-[#888] border border-transparent'}
+                  `}>
+                    {d}m
+                  </span>
+                ))}
+              </div>
             </div>
           )}
+
+          {/* Right panel – Calendar / Slots / Form */}
+          <div className={`flex-1 ${booked ? 'p-0' : 'p-6 sm:p-10 lg:p-12'} bg-[#fafafa]/30`}>
+            {booked ? (
+              <SuccessScreen eventType={eventType} date={selectedDate} slot={selectedSlot} />
+            ) : selectedSlot ? (
+              <BookingForm 
+                slot={selectedSlot} 
+                eventType={eventType} 
+                date={selectedDate}
+                onBack={() => setSelectedSlot(null)} 
+                onSuccess={() => setBooked(true)} 
+              />
+            ) : (
+              <div className="flex flex-col lg:flex-row gap-10 lg:gap-14">
+                {/* Calendar Section */}
+                <div className="flex-1 w-full max-w-[440px] mx-auto lg:mx-0">
+                  <Calendar selectedDate={selectedDate} onSelect={setSelectedDate} eventType={eventType} />
+                </div>
+
+                {/* Time slots Section */}
+                {selectedDate && (
+                  <div className="w-full lg:w-[200px] animate-in-slide-right">
+                    <div className="flex items-center justify-between mb-6">
+                      <p className="text-xs sm:text-sm font-bold text-[#1a1a1a] uppercase tracking-wider">
+                        {format(selectedDate, 'EEE, MMM d')}
+                      </p>
+                    </div>
+                    {slotsLoading ? (
+                      <div className="flex items-center gap-2 py-4">
+                        <div className="w-2 h-2 rounded-full bg-[#1a1a1a] animate-bounce" />
+                        <div className="w-2 h-2 rounded-full bg-[#1a1a1a] animate-bounce [animation-delay:-0.15s]" />
+                        <div className="w-2 h-2 rounded-full bg-[#1a1a1a] animate-bounce [animation-delay:-0.3s]" />
+                      </div>
+                    ) : (
+                      <TimeGrid slots={slots} onSelect={setSelectedSlot} />
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

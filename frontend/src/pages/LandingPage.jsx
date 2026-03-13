@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
-import { ArrowRight, Calendar, Clock, Video, Globe, Lock, Code, Layers, CheckCircle } from 'lucide-react';
+import { ArrowRight, Calendar, Clock, Video, Globe, Lock, Code, Layers, CheckCircle, File, Search, Settings } from 'lucide-react';
+import { OrbitingCircles } from '@/components/ui/orbiting-circles';
 
 /* ─── tiny hook: triggers .visible class when element enters viewport ─── */
 function useReveal() {
@@ -94,7 +95,7 @@ export default function LandingPage() {
         {/* ── Navbar ── */}
         <nav className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
           <div className="flex items-center gap-10">
-            <span className="text-2xl font-bold tracking-tight">Cal.com</span>
+            <span className="text-2xl font-bold tracking-tight">CloneCal</span>
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-500">
               {['Solutions', 'Enterprise', 'Pricing', 'About'].map(l => (
                 <button key={l} className="hover:text-slate-900 transition-colors duration-200">{l}</button>
@@ -114,80 +115,91 @@ export default function LandingPage() {
 
             {/* Left */}
             <div className="flex-1 text-center lg:text-left">
-              <div className="hero-badge inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-xs font-semibold text-slate-600 mb-6 cursor-default">
-                <span className="bg-white px-1.5 py-0.5 rounded shadow-sm text-[10px]">NEW</span>
-                Cal.com clone v1 launches →
+              <div className="hero-badge inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-[10px] sm:text-xs font-semibold text-slate-600 mb-6 cursor-default">
+                <span className="bg-white px-1.5 py-0.5 rounded shadow-sm text-[9px] sm:text-[10px]">NEW</span>
+                CloneCal launches →
               </div>
 
-              <h1 className="hero-h1 text-5xl md:text-[5.5rem] font-bold tracking-tight leading-[1.05] mb-8">
+              <h1 className="hero-h1 text-4xl sm:text-5xl md:text-6xl lg:text-[5.5rem] font-bold tracking-tight leading-[1.1] lg:leading-[1.05] mb-6 sm:mb-8">
                 The <span className="gradient-text">better</span> way to schedule your meetings
               </h1>
 
-              <p className="hero-sub text-lg text-slate-500 mb-10 max-w-2xl leading-relaxed">
+              <p className="hero-sub text-base sm:text-lg text-slate-500 mb-8 sm:mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
                 A fully customizable scheduling platform for individuals, businesses, and developers who need powerful booking workflows.
               </p>
 
               <div className="hero-btns flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
                 <Link to="/admin"
-                  className="glow-btn w-full sm:w-auto px-8 py-4 bg-slate-900 text-white rounded-xl font-bold text-base hover:bg-slate-800 transition-all duration-300 flex items-center justify-center gap-2 group">
+                  className="glow-btn w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-slate-900 text-white rounded-xl font-bold text-sm sm:text-base hover:bg-slate-800 transition-all duration-300 flex items-center justify-center gap-2 group">
                   Get started for free
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
                 </Link>
-                <button className="w-full sm:w-auto px-8 py-4 bg-white border border-slate-200 text-slate-900 rounded-xl font-bold text-base hover:bg-slate-50 hover:border-slate-300 transition-all duration-300">
+                <button className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white border border-slate-200 text-slate-900 rounded-xl font-bold text-sm sm:text-base hover:bg-slate-50 hover:border-slate-300 transition-all duration-300">
                   Book a demo →
                 </button>
               </div>
-              <p className="hero-note mt-5 text-sm text-slate-400">No credit card required · Free forever</p>
+              <p className="hero-note mt-5 text-xs sm:text-sm text-slate-400">No credit card required · Free forever</p>
             </div>
 
-            {/* Right – floating calendar mock */}
+            {/* Right – visual with orbiting circles */}
             <div className="hero-visual flex-1 w-full max-w-lg hidden lg:block">
-              <div className="relative">
-                {/* Glow rings */}
-                <div className="absolute inset-0 rounded-3xl bg-violet-100 blur-3xl opacity-50" />
-                <div className="relative bg-white rounded-3xl border border-slate-200 shadow-2xl p-6">
+              <div className="relative h-[500px] w-full flex items-center justify-center overflow-hidden rounded-[3rem]">
+                {/* Dashboard mock in center */}
+                <div className="relative z-20 bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 w-[340px] transform hover:scale-105 transition-transform duration-500">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <p className="text-xs text-slate-400 mb-0.5">May 2025</p>
-                      <p className="font-bold text-slate-900">Schedule a meeting</p>
+                      <p className="text-[10px] text-slate-400 mb-0.5">Scheduling</p>
+                      <p className="font-bold text-sm text-slate-900">Next meeting</p>
                     </div>
-                    <div className="flex items-center gap-1.5 bg-green-50 border border-green-100 rounded-full px-3 py-1">
-                      <span className="w-2 h-2 rounded-full bg-green-500 ping-slow" style={{ animation: 'ping-slow 2s ease-in-out infinite' }} />
-                      <span className="text-xs font-medium text-green-700">Available</span>
-                    </div>
+                    <div className="bg-slate-900 text-white rounded-lg px-2 py-1 text-[10px] font-bold">LIVE</div>
                   </div>
-                  <div className="grid grid-cols-7 gap-1.5 mt-2">
-                    {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => (
-                      <div key={d} className="text-center text-[10px] font-medium text-slate-400 pb-1">{d}</div>
-                    ))}
-                    {[...Array(31)].map((_, i) => {
-                      const special = [8, 14, 21, 22, 28].includes(i);
-                      const today = i === 15;
-                      return (
-                        <div key={i}
-                          className={`aspect-square rounded-lg flex items-center justify-center text-xs font-medium transition-all duration-200 cursor-pointer
-                            ${today ? 'bg-slate-900 text-white shadow-lg scale-110' : ''}
-                            ${special && !today ? 'bg-violet-50 text-violet-700 border border-violet-200' : ''}
-                            ${!today && !special ? 'text-slate-400 hover:bg-slate-50' : ''}
-                          `}>
-                          {i + 1}
-                          {special && !today && <span className="absolute mt-5 w-1 h-1 rounded-full bg-violet-400" />}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {/* Upcoming slot */}
-                  <div className="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
-                      <Clock className="w-4 h-4 text-violet-600" />
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="h-2 w-16 bg-slate-200 rounded mb-1.5" />
+                        <div className="h-1.5 w-24 bg-slate-100 rounded" />
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs font-semibold text-slate-900">30 min meeting</p>
-                      <p className="text-[10px] text-slate-400">Next: Today at 3:00 PM</p>
+                    <div className="p-3 rounded-xl border border-slate-100 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-slate-300" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="h-2 w-20 bg-slate-100 rounded mb-1.5" />
+                        <div className="h-1.5 w-12 bg-slate-50 rounded" />
+                      </div>
                     </div>
-                    <CheckCircle className="w-4 h-4 text-green-500 ml-auto" />
                   </div>
                 </div>
+
+                {/* Orbiting Elements */}
+                <OrbitingCircles radius={window.innerWidth < 640 ? 140 : 190} duration={30} delay={0}>
+                  <div className="p-2 sm:p-3 bg-white rounded-2xl shadow-lg border border-slate-100 text-slate-400">
+                    <Calendar className="w-4 h-4 sm:w-6 sm:h-6" />
+                  </div>
+                </OrbitingCircles>
+                <OrbitingCircles radius={window.innerWidth < 640 ? 140 : 190} duration={30} delay={15}>
+                  <div className="p-2 sm:p-3 bg-white rounded-2xl shadow-lg border border-slate-100 text-slate-400">
+                    <Search className="w-4 h-4 sm:w-6 sm:h-6" />
+                  </div>
+                </OrbitingCircles>
+                
+                <OrbitingCircles radius={window.innerWidth < 640 ? 90 : 130} duration={20} delay={0} reverse>
+                  <div className="p-2 sm:p-3 bg-white rounded-2xl shadow-lg border border-slate-100 text-slate-400">
+                    <Settings className="w-3 h-3 sm:w-5 sm:h-5" />
+                  </div>
+                </OrbitingCircles>
+                <OrbitingCircles radius={window.innerWidth < 640 ? 90 : 130} duration={20} delay={10} reverse>
+                  <div className="p-2 sm:p-2.5 bg-white rounded-2xl shadow-lg border border-slate-100 text-slate-400">
+                    <File className="w-3 h-3 sm:w-5 sm:h-5" />
+                  </div>
+                </OrbitingCircles>
+                
+                {/* Background glow */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-violet-100/30 blur-[80px] rounded-full z-0" />
               </div>
             </div>
           </div>

@@ -26,9 +26,9 @@ function NavItem({ to, icon: Icon, label, end }) {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }) {
   return (
-    <div className="w-[220px] min-h-screen flex flex-col flex-shrink-0"
+    <div className="w-[260px] lg:w-[220px] h-full flex flex-col flex-shrink-0 relative z-50 animate-in-slide-left"
       style={{ backgroundColor: 'var(--bg-sidebar)', borderRight: '1px solid var(--border)' }}>
 
       {/* User Header */}
@@ -43,7 +43,11 @@ export default function Sidebar() {
       {/* Main Navigation */}
       <nav className="flex-1 px-2 py-3 overflow-y-auto">
         <div className="space-y-0.5">
-          {mainNav.map((item) => <NavItem key={item.to} {...item} />)}
+          {mainNav.map((item) => (
+            <div key={item.to} onClick={onClose}>
+              <NavItem {...item} />
+            </div>
+          ))}
         </div>
       </nav>
 
@@ -52,7 +56,7 @@ export default function Sidebar() {
         <a href="/" className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-[#555] hover:bg-[#1e1e1e] hover:text-[#d4d4d4] transition-colors no-underline">
           View public page
         </a>
-        <p className="px-3 text-[10px] text-[#333] pt-1">© 2024 CalClone, Inc.</p>
+        <p className="px-3 text-[10px] text-[#333] pt-1">© 2024 CloneCal, Inc.</p>
       </div>
     </div>
   );

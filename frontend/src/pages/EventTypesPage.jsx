@@ -45,68 +45,66 @@ function EventModal({ onClose, onSubmit, initial }) {
   };
 
   return (
-    <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && onClose()} style={{ background: 'rgba(0,0,0,0.8)' }}>
-      <div className="modal-box" style={{ width: 520, background: '#111', border: '1px solid #1f1f1f', borderRadius: 16, padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '32px 32px 24px' }}>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#fff', marginBottom: 8, letterSpacing: '-0.02em' }}>
+    <div className="modal-backdrop px-4" onClick={(e) => e.target === e.currentTarget && onClose()} style={{ background: 'rgba(0,0,0,0.8)' }}>
+      <div className="modal-box w-full max-w-[520px] bg-[#111] border border-[#1f1f1f] rounded-2xl overflow-hidden animate-in">
+        <div className="p-6 sm:p-10 pb-6 sm:pb-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 tracking-tight">
             {initial ? 'Edit event type' : 'Add a new event type'}
           </h2>
-          <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 28 }}>
+          <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-8">
             Set up event types to offer different types of meetings.
           </p>
 
-          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div className="form-group" style={{ margin: 0 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#fff', marginBottom: 8, display: 'block' }}>Title</label>
+          <form onSubmit={submit} className="flex flex-col gap-5 sm:gap-6">
+            <div className="form-group mb-0">
+              <label className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white/50 mb-2 block">Title</label>
               <input name="title" value={form.title} onChange={handle} required 
                 placeholder="Quick chat" 
-                style={{ background: 'transparent', border: '1px solid #1f1f1f', borderRadius: 10, height: 44, padding: '0 16px', fontSize: 14, color: '#fff' }} />
+                className="w-full bg-transparent border border-[#1f1f1f] rounded-xl h-11 px-4 text-sm text-white outline-none focus:border-[var(--accent)] transition-colors" />
             </div>
 
-            <div className="form-group" style={{ margin: 0 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#fff', marginBottom: 8, display: 'block' }}>URL</label>
-              <div style={{ display: 'flex', alignItems: 'center', background: 'transparent', border: '1px solid #1f1f1f', borderRadius: 10, overflow: 'hidden' }}>
-                <span style={{ padding: '0 12px', color: 'var(--text-muted)', fontSize: 13, opacity: 0.6 }}>
-                  cal.com/udit-bhardwaj-dorkjw/
+            <div className="form-group mb-0">
+              <label className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white/50 mb-2 block">URL</label>
+              <div className="flex items-center bg-transparent border border-[#1f1f1f] rounded-xl overflow-hidden focus-within:border-[var(--accent)] transition-colors">
+                <span className="hidden sm:block pl-4 pr-1 text-[var(--text-muted)] text-[13px] opacity-60">
+                  cal.com/.../
                 </span>
                 <input name="slug" value={form.slug} onChange={handle} required
-                  style={{ border: 'none', background: 'transparent', height: 44, padding: '0 0 0 4px', fontSize: 14, flex: 1, color: '#fff' }}
+                  className="bg-transparent h-11 px-4 sm:pl-0 text-sm flex-1 text-white outline-none"
                   placeholder="slug" />
               </div>
             </div>
 
-            <div className="form-group" style={{ margin: 0 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#fff', marginBottom: 8, display: 'block' }}>Description</label>
-              <div style={{ position: 'relative', border: '1px solid #1f1f1f', borderRadius: 10, background: 'transparent', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', gap: 16, padding: '12px 16px', borderBottom: '1px solid #1f1f1f' }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, cursor: 'not-allowed', opacity: 0.4 }}>B</span>
-                  <span style={{ fontSize: 14, fontStyle: 'italic', cursor: 'not-allowed', opacity: 0.4 }}>I</span>
+            <div className="form-group mb-0">
+              <label className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white/50 mb-2 block">Description</label>
+              <div className="border border-[#1f1f1f] rounded-xl bg-transparent overflow-hidden focus-within:border-[var(--accent)] transition-colors">
+                <div className="flex gap-4 p-3 border-b border-[#1f1f1f] bg-white/[0.02]">
+                  <span className="text-sm font-bold opacity-30 cursor-not-allowed text-white">B</span>
+                  <span className="text-sm italic opacity-30 cursor-not-allowed text-white">I</span>
                 </div>
                 <textarea name="description" value={form.description} onChange={handle} rows={3} 
                   placeholder="A quick video meeting." 
-                  style={{ width: '100%', background: 'transparent', border: 'none', padding: '12px 16px', fontSize: 14, color: '#fff', resize: 'none' }} />
+                  className="w-full bg-transparent border-none p-4 text-sm text-white resize-none outline-none" />
               </div>
             </div>
 
-            <div className="form-group" style={{ margin: 0 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#fff', marginBottom: 8, display: 'block' }}>Duration</label>
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <div className="form-group mb-0">
+              <label className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-white/50 mb-2 block">Duration</label>
+              <div className="relative flex items-center">
                 <input name="duration" type="number" value={form.duration} onChange={handle} min={1} required 
-                  style={{ width: '100%', background: 'transparent', border: '1px solid #1f1f1f', borderRadius: 10, height: 44, padding: '0 16px', fontSize: 14, color: '#fff' }} />
-                <span style={{ position: 'absolute', right: 16, fontSize: 14, color: 'var(--text-muted)', opacity: 0.6 }}>minutes</span>
+                  className="w-full bg-transparent border border-[#1f1f1f] rounded-xl h-11 px-4 text-sm text-white outline-none focus:border-[var(--accent)] transition-colors" />
+                <span className="absolute right-4 text-xs font-medium text-[var(--text-muted)] opacity-60">minutes</span>
               </div>
             </div>
           </form>
         </div>
 
-        <div style={{ padding: '20px 32px', borderTop: '1px solid #1f1f1f', display: 'flex', justifyContent: 'flex-end', gap: 12, background: 'rgba(255,255,255,0.02)' }}>
-          <button type="button" className="btn-secondary" onClick={onClose} 
-            style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'transparent', fontWeight: 600, color: '#fff' }}>
+        <div className="p-5 sm:p-6 bg-white/[0.02] border-t border-[#1f1f1f] flex flex-col sm:flex-row justify-end gap-3 px-6">
+          <button type="button" className="text-sm font-bold text-white px-6 py-2.5 rounded-xl hover:bg-white/5 transition-colors order-2 sm:order-1" onClick={onClose}>
             Close
           </button>
-          <button type="submit" className="btn-primary" disabled={saving} onClick={submit}
-            style={{ padding: '8px 24px', borderRadius: 8, background: '#fff', color: '#000', fontWeight: 600, border: 'none' }}>
-            {saving ? 'Saving…' : 'Continue'}
+          <button type="submit" className="bg-white text-black text-sm font-bold px-8 py-2.5 rounded-xl hover:bg-slate-100 transition-colors order-1 sm:order-2" disabled={saving} onClick={submit}>
+            {saving ? 'Saving…' : (initial ? 'Update' : 'Continue')}
           </button>
         </div>
       </div>
@@ -124,69 +122,41 @@ function EventMenu({ et, onEdit, onDelete, onDuplicate, onEmbed }) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
   return (
-    <div ref={ref} style={{ position: 'relative' }}>
-      <button className="btn-icon" 
-        style={{ 
-          width: 38, 
-          height: 38, 
-          border: '1px solid #1f1f1f', 
-          borderRadius: 8, 
-          background: open ? '#1f1f1f' : 'rgba(255,255,255,0.03)',
-          color: '#888'
-        }}
+    <div ref={ref} className="relative inline-block text-left">
+      <button 
+        className={`flex items-center justify-center w-9 h-9 border border-[#2a2a2a] rounded-lg transition-all
+          ${open ? 'bg-[#2a2a2a] text-white' : 'bg-white/[0.03] text-[#888] hover:bg-white/[0.08] hover:text-white hover:border-[#3a3a3a]'}
+        `}
         onClick={() => setOpen(!open)}>
-        <MoreHorizontal className="w-[18px] h-[18px]" />
+        <MoreHorizontal className="w-4 h-4" />
       </button>
       {open && (
-        <div className="dropdown-menu" style={{ 
-          minWidth: 180, 
-          padding: 6, 
-          background: '#1c1c1c', 
-          border: '1px solid #2a2a2a', 
-          borderRadius: 12,
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-        }}>
-          <div
-            className="dropdown-item"
-            style={{ borderRadius: 8, padding: '8px 12px', gap: 12 }}
-            onClick={() => {
-              onEdit();
-              setOpen(false);
-            }}
+        <div className="absolute right-0 top-full mt-2 z-[60] min-w-[180px] p-1.5 bg-[#161616] border border-[#2a2a2a] rounded-xl shadow-[0_10px_15px_-3px_rgba(0,0,0,0.4),0_4px_6px_-2px_rgba(0,0,0,0.05)] animate-in slide-in-from-top-1 fade-in duration-200">
+          <button
+            className="w-full flex items-center gap-3 px-3 py-2 text-xs sm:text-sm text-[#a3a3a3] hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left"
+            onClick={() => { onEdit(); setOpen(false); }}
           >
-            <Pencil className="w-4 h-4" /> Edit
-          </div>
-          <div
-            className="dropdown-item"
-            style={{ borderRadius: 8, padding: '8px 12px', gap: 12 }}
-            onClick={() => {
-              onDuplicate();
-              setOpen(false);
-            }}
+            <Pencil className="w-3.5 h-3.5" /> <span>Edit</span>
+          </button>
+          <button
+            className="w-full flex items-center gap-3 px-3 py-2 text-xs sm:text-sm text-[#a3a3a3] hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left"
+            onClick={() => { onDuplicate(); setOpen(false); }}
           >
-            <Copy className="w-4 h-4" /> Duplicate
-          </div>
-          <div
-            className="dropdown-item"
-            style={{ borderRadius: 8, padding: '8px 12px', gap: 12 }}
-            onClick={() => {
-              onEmbed();
-              setOpen(false);
-            }}
+            <Copy className="w-3.5 h-3.5" /> <span>Duplicate</span>
+          </button>
+          <button
+            className="w-full flex items-center gap-3 px-3 py-2 text-xs sm:text-sm text-[#a3a3a3] hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left"
+            onClick={() => { onEmbed(); setOpen(false); }}
           >
-            <Code2 className="w-4 h-4" /> Embed
-          </div>
-          <div className="dropdown-divider" style={{ margin: '6px 0', background: '#2a2a2a' }} />
-          <div
-            className="dropdown-item danger"
-            style={{ borderRadius: 8, padding: '8px 12px', gap: 12, color: '#ff4d4d' }}
-            onClick={() => {
-              onDelete();
-              setOpen(false);
-            }}
+            <Code2 className="w-3.5 h-3.5" /> <span>Embed</span>
+          </button>
+          <div className="h-px bg-[#2a2a2a] my-1.5 mx-1" />
+          <button
+            className="w-full flex items-center gap-3 px-3 py-2 text-xs sm:text-sm text-[#f87171] hover:bg-red-500/10 rounded-lg transition-colors text-left font-medium"
+            onClick={() => { onDelete(); setOpen(false); }}
           >
-            <Trash2 className="w-4 h-4" /> Delete
-          </div>
+            <Trash2 className="w-3.5 h-3.5" /> <span>Delete</span>
+          </button>
         </div>
       )}
     </div>
@@ -274,22 +244,22 @@ export default function EventTypesPage() {
   const filtered = eventTypes.filter(et => et.title.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="animate-in" style={{ minHeight: '100vh', background: 'var(--bg-app)', color: 'var(--text-primary)' }}>
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '40px 24px 0' }}>
+    <div className="animate-in pb-12" style={{ minHeight: '100vh', background: 'var(--bg-app)', color: 'var(--text-primary)' }}>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10">
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 32 }}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 sm:mb-12">
           <div>
-            <h1 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 4 }}>Event types</h1>
-            <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Configure different events for people to book on your calendar.</p>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-1 sm:mb-2">Event types</h1>
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)]">Configure different events for people to book on your calendar.</p>
           </div>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <div style={{ position: 'relative' }}>
-              <Search className="w-4 h-4" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] opacity-60" />
               <input value={search} onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search"
-                style={{ paddingLeft: 36, width: 280, height: 40, background: '#111', border: '1px solid #222', borderRadius: 10, fontSize: 14 }} />
+                className="w-full sm:w-[220px] md:w-[280px] bg-[#111] border border-[#222] rounded-xl h-10 pl-10 pr-4 text-sm outline-none focus:border-[var(--accent)] transition-colors" />
             </div>
-            <button className="btn-primary" onClick={() => setShowModal(true)} style={{ padding: '8px 18px', borderRadius: 10, fontWeight: 600 }}>
+            <button className="btn-primary whitespace-nowrap px-6 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2" onClick={() => setShowModal(true)}>
               <Plus className="w-4 h-4" /> New
             </button>
           </div>
@@ -297,65 +267,76 @@ export default function EventTypesPage() {
 
         <div>
           {error && (
-            <div style={{ marginBottom: 24, padding: '12px 16px', background: 'rgba(239,68,68,.08)', border: '1px solid rgba(239,68,68,.2)', borderRadius: 12, color: '#f87171', fontSize: 14 }}>
+            <div className="mb-6 p-3 sm:p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm animate-in">
               {error}
             </div>
           )}
 
-          {loading ? (
-            <div className="empty-state"><p>Loading…</p></div>
-          ) : filtered.length === 0 ? (
-            <div className="empty-state" style={{ border: '1px dashed #222', borderRadius: 16 }}>
-              <Clock className="w-10 h-10" />
-              <p>{search ? 'No results match your search.' : 'No event types yet — create your first one.'}</p>
-            </div>
-          ) : (
-            <div style={{ background: 'transparent', border: '1px solid #1f1f1f', borderRadius: 16 }}>
-              {filtered.map((et, idx) => (
-                <div key={et.id}
-                  className="card-hover"
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    padding: '20px 32px', 
-                    gap: 16,
-                    borderBottom: idx === filtered.length - 1 ? 'none' : '1px solid #1f1f1f',
-                    background: 'transparent',
-                    transition: 'background-color 0.2s',
-                  }}>
-                  {/* Info */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                      <span style={{ fontWeight: 600, color: '#fff', fontSize: 15 }}>{et.title}</span>
-                      <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 400 }}>/{et.slug}</span>
+          <div className="flex flex-col gap-3 sm:gap-4 overflow-visible">
+            {loading ? (
+              <div className="p-20 flex flex-col items-center justify-center bg-white/[0.01] border border-[#1f1f1f] rounded-2xl animate-pulse text-white/30">
+                Loading event types…
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 px-6 text-center bg-white/[0.01] border border-[#1f1f1f] border-dashed rounded-2xl">
+                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6">
+                  <Clock className="w-8 h-8 text-[var(--text-muted)] opacity-40" />
+                </div>
+                <h3 className="text-white font-bold mb-1">No results found</h3>
+                <p className="text-sm text-[var(--text-secondary)] opacity-60 max-w-[280px]">
+                  {search ? `Your search "${search}" didn't match any events.` : 'Start by creating your first event type.'}
+                </p>
+              </div>
+            ) : (
+              filtered.map((et) => (
+                <div key={et.id} 
+                  className="group flex flex-row items-center justify-between p-4 sm:p-5 bg-white/[0.01] border border-[#1f1f1f] rounded-xl hover:bg-white/[0.03] hover:border-[#2a2a2a] transition-all duration-300 cursor-pointer relative shadow-sm hover:shadow-xl" 
+                  onClick={() => setEditItem(et)}>
+                  
+                  {/* Event Details */}
+                  <div className="flex flex-col gap-1 min-w-0 pr-4">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <span className="text-sm sm:text-[15px] font-bold text-white truncate tracking-tight group-hover:text-[var(--accent)] transition-colors">{et.title}</span>
+                      <span className="text-[10px] sm:text-[11px] text-[var(--text-muted)] font-medium shrink-0 opacity-70">/{et.slug}</span>
                     </div>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 6, padding: '3px 8px' }}>
-                      <Clock className="w-3.5 h-3.5" style={{ color: 'var(--text-secondary)' }} />
-                      <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>{et.duration}m</span>
+                    <div className="flex items-center gap-2">
+                      <div className="inline-flex items-center gap-1.5 text-[var(--text-secondary)]">
+                        <Clock className="w-3.5 h-3.5 opacity-60" />
+                        <span className="text-xs font-semibold">{et.duration}m</span>
+                      </div>
+                      <div className="w-1 h-1 rounded-full bg-[var(--text-muted)] opacity-30" />
+                      <span className="text-xs font-medium text-[var(--text-muted)]">1-on-1</span>
+                      {hidden[et.id] && (
+                        <span className="ml-1 px-1.5 py-0.5 rounded-md bg-orange-500/10 text-[9px] font-black uppercase tracking-widest text-orange-500/80 border border-orange-500/10">
+                          Hidden
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginRight: 12 }}>
-                      {hidden[et.id] && <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Hidden</span>}
+                  {/* Actions Section */}
+                  <div className="flex items-center gap-4 sm:gap-6 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center" title={hidden[et.id] ? "Enable event" : "Disable event"}>
                       <Toggle
                         checked={!!hidden[et.id]}
                         onChange={() => setHidden((p) => ({ ...p, [et.id]: !p[et.id] }))}
                       />
                     </div>
-                    <EventMenu
-                      et={et}
-                      onEdit={() => setEditItem(et)}
-                      onDelete={() => handleDelete(et.id)}
-                      onDuplicate={() => handleDuplicate(et)}
-                      onEmbed={() => handleEmbed(et)}
-                    />
+                    <div className="h-4 w-px bg-[#1f1f1f]" />
+                    <div className="relative">
+                      <EventMenu
+                        et={et}
+                        onEdit={() => setEditItem(et)}
+                        onDelete={() => handleDelete(et.id)}
+                        onDuplicate={() => handleDuplicate(et)}
+                        onEmbed={() => handleEmbed(et)}
+                      />
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
       </div>
 

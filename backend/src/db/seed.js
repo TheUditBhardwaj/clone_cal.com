@@ -33,22 +33,38 @@ async function seed() {
 
     // 2. Event Types
     console.log('Seeding event types...');
-    const [event1, event2] = await db.insert(eventTypes).values([
+    const createdEvents = await db.insert(eventTypes).values([
       {
         userId: user.id,
         title: '30 Min Meeting',
         description: 'A quick 30-minute catch up',
         duration: 30,
-        slug: '30min-meeting',
+        slug: '30min',
       },
       {
         userId: user.id,
-        title: '1 Hour Strategy Session',
-        description: 'Deep dive into strategy',
+        title: 'Strategy Session',
+        description: 'Deep dive into strategy and planning',
         duration: 60,
-        slug: '60min-strategy',
+        slug: 'strategy',
+      },
+      {
+        userId: user.id,
+        title: 'Quick Catch-up',
+        description: '15 minute sync for status updates',
+        duration: 15,
+        slug: 'quick-sync',
+      },
+      {
+        userId: user.id,
+        title: 'Technical Interview',
+        description: 'Screening for engineering candidates',
+        duration: 45,
+        slug: 'tech-interview',
       }
     ]).returning();
+
+    const [event1, event2, event3, event4] = createdEvents;
 
     // 3. Schedule (Working hours)
     console.log('Seeding schedule...');
@@ -76,11 +92,16 @@ async function seed() {
 
     // 5. Bookings
     console.log('Seeding bookings...');
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const today = new Date();
+    
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
 
-    const dayAfter = new Date();
-    dayAfter.setDate(dayAfter.getDate() + 2);
+    const dayAfter = new Date(today);
+    dayAfter.setDate(today.getDate() + 2);
+
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 7);
 
     await db.insert(bookings).values([
       {
@@ -108,6 +129,24 @@ async function seed() {
         bookingDate: dayAfter,
         startTime: '14:00:00',
         endTime: '15:00:00',
+        status: 'ACCEPTED',
+      },
+      {
+        eventTypeId: event3.id,
+        bookerName: 'David Wilson',
+        bookerEmail: 'david@test.com',
+        bookingDate: nextWeek,
+        startTime: '09:30:00',
+        endTime: '09:45:00',
+        status: 'ACCEPTED',
+      },
+      {
+        eventTypeId: event4.id,
+        bookerName: 'Eve Adams',
+        bookerEmail: 'eve@test.com',
+        bookingDate: dayAfter,
+        startTime: '11:00:00',
+        endTime: '11:45:00',
         status: 'ACCEPTED',
       }
     ]);

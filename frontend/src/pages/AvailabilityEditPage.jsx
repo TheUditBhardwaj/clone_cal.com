@@ -253,98 +253,84 @@ export default function AvailabilityEditPage() {
 
   return (
     <div className="animate-in" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-app)' }}>
-      {/* Top bar */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between', 
-        padding: '12px 32px', 
-        borderBottom: '1px solid var(--border)', 
-        background: 'var(--bg-sidebar)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <button className="btn-icon" onClick={() => navigate('/admin/availability')}>
-            <ChevronLeft className="w-5 h-5" />
+      {/* Header */}
+      <div className="px-4 py-4 sm:px-8 sm:py-6 border-b border-[var(--border)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 sticky top-0 z-10 bg-[var(--bg-sidebar)]">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate('/admin/availability')} className="btn-icon">
+            <ChevronLeft className="w-4 h-4" />
           </button>
-          <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: 16 }}>
+          <div>
             {editingName ? (
-              <input autoFocus value={tempName}
+              <input 
+                autoFocus
+                className="bg-transparent text-lg font-bold outline-none border-b border-[var(--accent)] text-[var(--text-primary)] w-full max-w-[200px]"
+                value={tempName}
                 onChange={(e) => setTempName(e.target.value)}
-                onBlur={() => { setSchedule(p => ({ ...p, name: tempName || p.name })); setEditingName(false); }}
-                onKeyDown={(e) => { if (e.key === 'Enter') { setSchedule(p => ({ ...p, name: tempName || p.name })); setEditingName(false); } }}
-                style={{ background: 'var(--bg-input)', border: '1px solid var(--accent)', color: 'var(--text-primary)', fontSize: 15, fontWeight: 700, padding: '4px 12px', borderRadius: 6, outline: 'none', width: 240 }} />
+                onBlur={() => { setSchedule(p => ({ ...p, name: tempName })); setEditingName(false); }}
+                onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+              />
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
-                onClick={() => { setTempName(schedule.name); setEditingName(true); }}>
-                <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{schedule.name}</span>
-                <Pencil className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} />
+              <div className="flex items-center gap-2 cursor-pointer" onClick={() => { setTempName(schedule.name); setEditingName(true); }}>
+                <span className="text-base sm:text-lg font-bold text-[var(--text-primary)]">{schedule.name}</span>
+                <Pencil className="w-3.5 h-3.5 text-[var(--text-muted)]" />
               </div>
             )}
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{summary}</p>
+            <p className="text-[10px] sm:text-xs text-[var(--text-secondary)] mt-0.5">{summary}</p>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-input)', padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)' }}>
-            <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>Set as default</span>
+        <div className="flex items-center gap-3 sm:gap-4 justify-end">
+          <div className="flex items-center gap-2 bg-[var(--bg-input)] px-3 py-1.5 rounded-lg border border-[var(--border)]">
+            <span className="text-[10px] sm:text-xs text-[var(--text-secondary)] font-medium">Set as default</span>
             <Toggle checked={schedule.isDefault} onChange={() => setSchedule(p => ({ ...p, isDefault: !p.isDefault }))} />
           </div>
-          <div style={{ width: 1, height: 24, background: 'var(--border)' }} />
-          {!isNew && <button className="btn-icon" style={{ color: '#ef4444' }} onClick={handleDelete} title="Delete schedule"><Trash2 className="w-4.5 h-4.5" /></button>}
-          <button className="btn-primary" onClick={handleSave} disabled={saving} style={{ padding: '8px 20px', fontSize: 13 }}>
+          <div className="hidden sm:block w-px h-6 bg-[var(--border)]" />
+          {!isNew && <button className="btn-icon text-red-500" onClick={handleDelete} title="Delete schedule"><Trash2 className="w-4.5 h-4.5" /></button>}
+          <button className="btn-primary px-4 sm:px-6 py-2 text-xs sm:text-sm" onClick={handleSave} disabled={saving}>
             {saved ? '✓ Saved' : saving ? 'Saving…' : 'Save'}
           </button>
         </div>
       </div>
 
       {/* Body */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', overflow: 'auto' }}>
-        <div style={{ width: '100%', maxWidth: 1400, display: 'flex', gap: 0 }}>
+      <div className="flex-1 overflow-auto flex flex-col lg:flex-row lg:justify-center">
+        <div className="w-full max-w-[1400px] flex flex-col lg:flex-row">
           {/* Main column */}
-          <div style={{ flex: 1, padding: '40px 48px', borderRight: '1px solid var(--border)' }}>
+          <div className="flex-1 p-6 sm:p-10 lg:p-12 border-b lg:border-b-0 lg:border-r border-[var(--border)]">
             <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>Weekly Hours</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {schedule.days.map((dayObj, di) => (
-                <div key={di} style={{ 
-                  display: 'flex', 
-                  alignItems: 'flex-start', 
-                  gap: 32, 
-                  padding: '16px 20px', 
-                  borderRadius: 12,
-                  background: dayObj.enabled ? 'transparent' : 'rgba(255,255,255,0.01)',
-                  border: dayObj.enabled ? '1px solid transparent' : '1px solid var(--border)',
-                  transition: 'all 0.2s'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: 150, paddingTop: 4 }}>
+                <div key={di} className={`
+                  flex flex-col sm:flex-row items-start gap-4 sm:gap-8 lg:gap-12 p-4 sm:p-5 rounded-2xl transition-all duration-200
+                  ${dayObj.enabled ? 'bg-transparent' : 'bg-white/[0.01] border border-[var(--border)]'}
+                `}>
+                  <div className="flex items-center gap-3 w-full sm:w-[140px] lg:w-[160px] pt-1.5 flex-shrink-0">
                     <Toggle checked={dayObj.enabled} onChange={() => toggleDay(di)} />
-                    <span style={{ fontSize: 14, fontWeight: 600, color: dayObj.enabled ? 'var(--text-primary)' : 'var(--text-muted)', letterSpacing: '-0.01em' }}>
+                    <span className={`text-sm font-bold tracking-tight ${dayObj.enabled ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`}>
                       {DAYS[di]}
                     </span>
                   </div>
-                  <div style={{ flex: 1 }}>
+                  <div className="flex-1 w-full sm:w-auto">
                     {!dayObj.enabled ? (
-                      <span style={{ fontSize: 13, color: 'var(--text-muted)', paddingTop: 8, display: 'block', fontWeight: 500 }}>Unavailable</span>
+                      <span className="text-xs sm:text-sm text-[var(--text-muted)] pt-2 sm:pt-4 display-block font-medium">Unavailable</span>
                     ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div className="flex flex-col gap-3">
                         {dayObj.slots.map((slot, si) => (
-                          <div key={si} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div key={si} className="flex flex-wrap items-center gap-3">
+                            <div className="flex items-center gap-2">
                               <TimeInput value={slot.start} onChange={(v) => updateSlot(di, si, 'start', v)} />
-                              <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>–</span>
+                              <span className="text-[var(--text-muted)] font-medium">–</span>
                               <TimeInput value={slot.end} onChange={(v) => updateSlot(di, si, 'end', v)} />
                             </div>
                             
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <div className="flex items-center gap-2">
                               {si === 0 && (
                                 <>
-                                  <button className="btn-icon" style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border)' }} onClick={() => addSlot(di)} title="Add slot"><Plus className="w-4 h-4" /></button>
-                                  <button className="btn-icon" style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border)' }} onClick={() => copyDay(di)} title="Copy to all days"><Copy className="w-3.5 h-3.5" /></button>
+                                  <button className="btn-icon w-8 h-8 rounded-lg border border-[var(--border)]" onClick={() => addSlot(di)} title="Add slot"><Plus className="w-4 h-4" /></button>
+                                  <button className="btn-icon w-8 h-8 rounded-lg border border-[var(--border)]" onClick={() => copyDay(di)} title="Copy to all days"><Copy className="w-3.5 h-3.5" /></button>
                                 </>
                               )}
                               {si > 0 && (
-                                <button className="btn-icon" style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border)', color: '#ef4444' }}
+                                <button className="btn-icon w-8 h-8 rounded-lg border border-[var(--border)] text-red-500"
                                   onClick={() => setSchedule(prev => ({ ...prev, days: prev.days.map((d, dIdx) => dIdx !== di ? d : { ...d, slots: d.slots.filter((_, sIdx) => sIdx !== si) }) }))}>
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>

@@ -71,101 +71,62 @@ export default function AvailabilityPage() {
   };
 
   return (
-    <div className="animate-in" style={{ minHeight: '100vh', background: 'var(--bg-app)', color: 'var(--text-primary)' }}>
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '40px 24px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 32 }}>
+    <div className="animate-in pb-12" style={{ minHeight: '100vh', background: 'var(--bg-app)', color: 'var(--text-primary)' }}>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 sm:mb-12">
           <div>
-            <h1 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 4 }}>Availability</h1>
-            <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Configure times when you are available for bookings.</p>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-1 sm:mb-2">Availability</h1>
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)]">Configure times when you are available for bookings.</p>
           </div>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: 4, display: 'flex', gap: 2 }}>
-              <button className="btn-secondary" style={{ 
-                fontSize: 13, 
-                padding: '6px 14px', 
-                borderRadius: 8, 
-                border: 'none', 
-                background: 'rgba(255,255,255,0.08)',
-                color: '#fff'
-              }}>My availability</button>
-              <button className="btn-secondary" style={{ 
-                fontSize: 13, 
-                padding: '6px 14px', 
-                borderRadius: 8, 
-                border: 'none', 
-                background: 'transparent',
-                opacity: 0.5
-              }}>Team availability</button>
+          <div className="flex items-center gap-3">
+            <div className="bg-white/5 rounded-xl p-1 flex gap-1 items-center">
+              <button className="text-[10px] sm:text-xs font-semibold px-3 py-1.5 rounded-lg bg-white/10 text-white">My availability</button>
+              <button className="text-[10px] sm:text-xs font-semibold px-3 py-1.5 rounded-lg text-white/40 hover:text-white transition-colors">Team availability</button>
             </div>
-            <button className="btn-primary" 
-              onClick={() => navigate('/admin/availability/edit/new')}
-              style={{ padding: '8px 18px', borderRadius: 10, fontWeight: 600 }}>
+            <button className="btn-primary px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2" 
+              onClick={() => navigate('/admin/availability/edit/new')}>
               <Plus className="w-4 h-4" /> New
             </button>
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="flex flex-col gap-4">
           {loading ? (
             <div className="empty-state"><p>Loading…</p></div>
           ) : schedules.length === 0 ? (
-            <div className="empty-state" style={{ border: '1px dashed var(--border)', borderRadius: 16 }}>
-              <Globe className="w-10 h-10" />
-              <p>No availability schedules yet.</p>
-              <button className="btn-primary" onClick={() => navigate('/admin/availability/edit/new')}>
+            <div className="empty-state border border-dashed border-[var(--border)] rounded-2xl py-12">
+              <Globe className="w-10 h-10 mb-4 text-[var(--text-muted)]" />
+              <p className="text-sm text-[var(--text-secondary)] mb-6">No availability schedules yet.</p>
+              <button className="btn-primary px-6 py-2.5 rounded-xl font-bold text-sm" onClick={() => navigate('/admin/availability/edit/new')}>
                 <Plus className="w-4 h-4" /> Create schedule
               </button>
             </div>
           ) : (
             schedules.map((s) => (
               <div key={s.id}
-                className="card-hover"
-                style={{ 
-                  padding: '24px 32px', 
-                  cursor: 'pointer', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between',
-                  background: 'transparent',
-                  border: '1px solid #1f1f1f',
-                  borderRadius: 16,
-                  transition: 'border-color 0.2s, background-color 0.2s',
-                }}
+                className="group flex items-center justify-between p-5 sm:p-7 md:p-8 rounded-2xl border border-[#1f1f1f] hover:border-[var(--border-light)] hover:bg-white/[0.02] transition-all duration-200 cursor-pointer"
                 onClick={() => navigate(`/admin/availability/edit/${s.id}`)}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 15, fontWeight: 600 }}>{s.name}</span>
+                <div className="flex flex-col gap-1.5 flex-1 min-w-0 pr-4">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-sm sm:text-base font-bold text-[var(--text-primary)] truncate">{s.name}</span>
                     {s.isDefault && (
-                      <span style={{ 
-                        fontSize: 11, 
-                        fontWeight: 600, 
-                        background: '#2a2a2a', 
-                        color: 'var(--text-secondary)', 
-                        padding: '2px 8px', 
-                        borderRadius: 6 
-                      }}>Default</span>
+                      <span className="text-[9px] sm:text-[10px] font-bold bg-[#2a2a2a] text-[var(--text-secondary)] px-2 py-0.5 rounded-md uppercase tracking-wider">Default</span>
                     )}
                   </div>
-                  <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{buildSummary(s)}</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                    <Globe className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} />
-                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{s.timezone}</span>
+                  <p className="text-xs sm:text-sm text-[var(--text-secondary)] truncate">{buildSummary(s)}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5 opacity-60">
+                    <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    <span className="text-[10px] sm:text-xs">{s.timezone}</span>
                   </div>
                 </div>
-                <div style={{ position: 'relative' }}>
-                  <button className="btn-icon" 
-                    style={{ 
-                      width: 36, height: 36, 
-                      borderRadius: 10, 
-                      border: '1px solid #1f1f1f',
-                      background: openMenuId === s.id ? 'var(--bg-hover)' : 'transparent' 
-                    }} 
+                <div className="relative">
+                  <button className="btn-icon w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-[#1f1f1f] group-hover:border-[var(--border)] transition-colors" 
                     onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === s.id ? null : s.id); }}>
-                    <MoreHorizontal className="w-4.5 h-4.5" />
+                    <MoreHorizontal className="w-4 h-4" />
                   </button>
                   {openMenuId === s.id && (
-                    <div ref={menuRef} className="dropdown-menu" style={{ right: 0, top: '100%', marginTop: 8 }}>
-                      <div className="dropdown-item danger" onClick={(e) => handleDelete(s.id, e)}>
+                    <div ref={menuRef} className="dropdown-menu right-0 top-full mt-2 min-w-[140px] z-20">
+                      <div className="dropdown-item danger text-xs sm:text-sm py-2" onClick={(e) => handleDelete(s.id, e)}>
                         <Trash2 className="w-4 h-4" /> Delete
                       </div>
                     </div>
