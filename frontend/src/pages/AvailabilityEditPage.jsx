@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Copy, Pencil, Plus, Trash2, X } from 'lucide-react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isToday, isBefore, isSameDay, isAfter, parseISO } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isToday, isBefore, isSameDay, isAfter, parseISO, startOfDay } from 'date-fns';
 import { getScheduleById, createSchedule, updateSchedule, deleteSchedule, getUsers } from '../api';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -52,10 +52,10 @@ function TimeInput({ value, onChange }) {
 
 function OverrideCalendar({ onClose, onAdd }) {
   const [viewMonth, setViewMonth] = useState(startOfMonth(new Date()));
-  const [rangeStart, setRangeStart] = useState(null);
-  const [rangeEnd, setRangeEnd] = useState(null);
+  const [selectedDates, setSelectedDates] = useState([]);
   const [start, setStart] = useState('09:00');
   const [end, setEnd] = useState('17:00');
+  const [unavailable, setUnavailable] = useState(false);
   
   const s = startOfWeek(startOfMonth(viewMonth));
   const e = endOfWeek(endOfMonth(viewMonth));
@@ -63,121 +63,176 @@ function OverrideCalendar({ onClose, onAdd }) {
   const today = new Date();
 
   const handleDayClick = (day) => {
-    if (!rangeStart || (rangeStart && rangeEnd)) {
-      setRangeStart(day);
-      setRangeEnd(null);
+    const dateStr = format(day, 'yyyy-MM-dd');
+    if (selectedDates.includes(dateStr)) {
+      setSelectedDates(selectedDates.filter(d => d !== dateStr));
     } else {
-      if (isBefore(day, rangeStart)) {
-        setRangeStart(day);
-      } else {
-        setRangeEnd(day);
-      }
+      setSelectedDates([...selectedDates, dateStr]);
     }
   };
 
-  const isSelected = (day) => {
-    if (rangeStart && isSameDay(day, rangeStart)) return true;
-    if (rangeEnd && isSameDay(day, rangeEnd)) return true;
-    if (rangeStart && rangeEnd && isAfter(day, rangeStart) && isBefore(day, rangeEnd)) return true;
-    return false;
-  };
-
-  const isInRange = (day) => {
-    if (!rangeStart || !rangeEnd) return false;
-    return (isAfter(day, rangeStart) || isSameDay(day, rangeStart)) && (isBefore(day, rangeEnd) || isSameDay(day, rangeEnd));
-  };
-
-  const getRangeLabel = () => {
-    if (!rangeStart) return 'Select a date';
-    if (!rangeEnd) return format(rangeStart, 'EEEE, MMMM d');
-    if (isSameMonth(rangeStart, rangeEnd)) {
-      return `${format(rangeStart, 'MMMM d')} – ${format(rangeEnd, 'd, yyyy')}`;
-    }
-    return `${format(rangeStart, 'MMM d')} – ${format(rangeEnd, 'MMM d, yyyy')}`;
-  };
-
-  const handleAdd = () => {
-    const targetDates = rangeStart && rangeEnd 
-      ? eachDayOfInterval({ start: rangeStart, end: rangeEnd })
-      : [rangeStart];
-    
-    targetDates.forEach(d => {
-      onAdd({ date: format(d, 'yyyy-MM-dd'), start, end });
+  const handleSave = () => {
+    if (selectedDates.length === 0) return;
+    selectedDates.forEach(dateStr => {
+      onAdd({ 
+        date: dateStr, 
+        start: unavailable ? '00:00' : start, 
+        end: unavailable ? '00:00' : end,
+        unavailable
+      });
     });
+    onClose();
   };
 
   return (
-    <div className="modal-backdrop" style={{ background: 'rgba(0,0,0,.85)' }} onClick={(ev) => ev.target === ev.currentTarget && onClose()}>
-      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-xl)', padding: 32, width: 480, animation: 'fade-in .15s ease' }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24, color: 'var(--text-primary)' }}>Select the dates to override</h2>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>
-            <strong>{format(viewMonth, 'MMMM')}</strong> {format(viewMonth, 'yyyy')}
-          </span>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button className="btn-icon" onClick={() => setViewMonth(subMonths(viewMonth, 1))}><ChevronLeft className="w-4 h-4" /></button>
-            <button className="btn-icon" onClick={() => setViewMonth(addMonths(viewMonth, 1))}><ChevronRight className="w-4 h-4" /></button>
+    <div className="modal-backdrop" style={{ background: 'rgba(0,0,0,.9)' }} onClick={(ev) => ev.target === ev.currentTarget && onClose()}>
+      <div style={{ 
+        background: '#0a0a0a', 
+        border: '1px solid #1f1f1f', 
+        borderRadius: 24, 
+        width: 780, 
+        display: 'flex',
+        overflow: 'hidden',
+        animation: 'fade-in .15s ease' 
+      }}>
+        {/* Left Pane: Calendar */}
+        <div style={{ flex: 1, padding: 32, borderRight: '1px solid #1f1f1f' }}>
+          <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 24, color: '#fff', letterSpacing: '-0.02em' }}>Select the dates to override</h2>
+          
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>
+              {format(viewMonth, 'MMMM')} <span style={{ opacity: 0.5 }}>{format(viewMonth, 'yyyy')}</span>
+            </span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn-icon" style={{ padding: 8, background: '#111', borderRadius: 8 }} onClick={() => setViewMonth(subMonths(viewMonth, 1))}><ChevronLeft className="w-4 h-4" /></button>
+              <button className="btn-icon" style={{ padding: 8, background: '#111', borderRadius: 8 }} onClick={() => setViewMonth(addMonths(viewMonth, 1))}><ChevronRight className="w-4 h-4" /></button>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, marginBottom: 8 }}>
+            {['SUN','MON','TUE','WED','THU','FRI','SAT'].map(d => (
+              <div key={d} style={{ textAlign: 'center', fontSize: 11, fontWeight: 800, color: '#4b5563', paddingBottom: 8, letterSpacing: '0.05em' }}>{d}</div>
+            ))}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6 }}>
+            {days.map((day) => {
+              const dateStr = format(day, 'yyyy-MM-dd');
+              const isSel = selectedDates.includes(dateStr);
+              const past = isBefore(day, startOfDay(today)) && !isToday(day);
+              const out = !isSameMonth(day, viewMonth);
+              const cur = isToday(day);
+              
+              return (
+                <button 
+                  key={dateStr}
+                  disabled={past || out}
+                  onClick={() => handleDayClick(day)}
+                  style={{
+                    aspectRatio: '1', 
+                    borderRadius: 12,
+                    border: 'none',
+                    cursor: past || out ? 'default' : 'pointer',
+                    background: isSel ? '#fff' : cur ? '#1a1a1a' : 'transparent',
+                    color: isSel ? '#000' : out || past ? '#374151' : '#fff',
+                    fontWeight: isSel ? 900 : 600, 
+                    fontSize: 14, 
+                    position: 'relative',
+                    transition: 'all 0.1s cubic-bezier(0.4, 0, 0.2, 1)',
+                    opacity: out && !isSel ? 0.2 : 1
+                  }}
+                >
+                  {format(day, 'd')}
+                  {cur && (
+                    <span style={{ 
+                      position: 'absolute', 
+                      bottom: 6, 
+                      left: '50%', 
+                      transform: 'translateX(-50%)', 
+                      width: 4, 
+                      height: 4, 
+                      borderRadius: '50%', 
+                      background: isSel ? '#000' : '#6d28d9' 
+                    }} />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 4 }}>
-          {['SUN','MON','TUE','WED','THU','FRI','SAT'].map(d => (
-            <div key={d} style={{ textAlign: 'center', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', paddingBottom: 8 }}>{d}</div>
-          ))}
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 24 }}>
-          {days.map((day) => {
-            const past = isBefore(day, today) && !isToday(day);
-            const out = !isSameMonth(day, viewMonth);
-            const isStart = rangeStart && isSameDay(day, rangeStart);
-            const isEnd = rangeEnd && isSameDay(day, rangeEnd);
-            const inRange = isInRange(day);
-            const cur = isToday(day);
-            const highlighted = isStart || isEnd || inRange;
+
+        {/* Right Pane: Configuration */}
+        <div style={{ width: 320, padding: 32, display: 'flex', flexDirection: 'column', background: '#080808' }}>
+          <div style={{ flex: 1 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 24 }}>Which hours are you free?</h3>
             
-            return (
-              <motion.button 
-                key={day.toISOString()} 
-                disabled={past || out}
-                onClick={() => handleDayClick(day)}
-                whileHover={!(past || out) ? { scale: 1.05 } : {}}
-                whileTap={!(past || out) ? { scale: 0.95 } : {}}
-                style={{
-                  aspectRatio: '1', 
-                  borderRadius: highlighted 
-                    ? (isStart && !isEnd && rangeEnd ? '8px 0 0 8px' : isEnd && !isStart ? '0 8px 8px 0' : (inRange && !isStart && !isEnd ? '0' : '8px'))
-                    : '8px', 
-                  border: 'none',
-                  cursor: past || out ? 'default' : 'pointer',
-                  background: highlighted ? '#fff' : cur ? 'var(--bg-hover)' : 'transparent',
-                  color: highlighted ? '#000' : out || past ? 'var(--text-muted)' : 'var(--text-primary)',
-                  fontWeight: highlighted ? 700 : 400, fontSize: 13, position: 'relative',
-                  opacity: out && !highlighted ? 0.3 : 1,
-                  transition: 'all 0.1s'
-                }}
-              >
-                {format(day, 'd')}
-                {cur && !highlighted && <span style={{ position: 'absolute', bottom: 3, left: '50%', transform: 'translateX(-50%)', width: 4, height: 4, borderRadius: '50%', background: 'var(--accent)' }} />}
-                {highlighted && (
-                  <motion.div 
-                    layoutId="ov_activeDay"
-                    style={{ position: 'absolute', inset: 0, borderRadius: 'inherit', border: '1px solid rgba(255,255,255,0.2)', zIndex: -1 }}
+            {!unavailable && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+                <div style={{ flex: 1 }}>
+                  <input 
+                    type="time" 
+                    value={start} 
+                    onChange={(e) => setStart(e.target.value)}
+                    style={{ 
+                      width: '100%', padding: '12px', background: '#111', border: '1px solid #1f1f1f', borderRadius: 12, 
+                      color: '#fff', fontSize: 13, fontWeight: 600, outline: 'none'
+                    }} 
                   />
-                )}
-              </motion.button>
-            );
-          })}
-        </div>
-        {rangeStart && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, padding: '12px 16px', background: 'var(--bg-hover)', borderRadius: 'var(--radius-md)' }}>
-            <span style={{ fontSize: 13, color: 'var(--text-secondary)', flex: 1, fontWeight: 600 }}>{getRangeLabel()}</span>
-            <TimeInput value={start} onChange={setStart} />
-            <span style={{ color: 'var(--text-muted)' }}>–</span>
-            <TimeInput value={end} onChange={setEnd} />
+                </div>
+                <span style={{ color: '#4b5563', fontWeight: 700 }}>–</span>
+                <div style={{ flex: 1 }}>
+                  <input 
+                    type="time" 
+                    value={end} 
+                    onChange={(e) => setEnd(e.target.value)}
+                    style={{ 
+                      width: '100%', padding: '12px', background: '#111', border: '1px solid #1f1f1f', borderRadius: 12, 
+                      color: '#fff', fontSize: 13, fontWeight: 600, outline: 'none'
+                    }} 
+                  />
+                </div>
+              </div>
+            )}
+
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 12, 
+              padding: '16px', 
+              background: '#111', 
+              borderRadius: 16, 
+              border: '1px solid #1f1f1f' 
+            }}>
+              <Toggle checked={unavailable} onChange={() => setUnavailable(!unavailable)} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>Mark unavailable (All day)</span>
+            </div>
           </div>
-        )}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          {rangeStart && <button className="btn-primary" onClick={handleAdd}>Add override</button>}
-          <button className="btn-secondary" onClick={onClose}>Close</button>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12, marginTop: 32 }}>
+            <button 
+              onClick={onClose}
+              style={{ padding: '12px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, color: '#9ca3af', border: 'none', background: 'transparent', cursor: 'pointer' }}
+            >
+              Close
+            </button>
+            <button 
+              onClick={handleSave}
+              disabled={selectedDates.length === 0}
+              style={{ 
+                padding: '12px 24px', 
+                borderRadius: 12, 
+                fontSize: 14, 
+                fontWeight: 800, 
+                color: '#000', 
+                background: selectedDates.length === 0 ? '#1a1a1a' : '#fff', 
+                border: 'none', 
+                cursor: selectedDates.length === 0 ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              Save override
+            </button>
+          </div>
         </div>
       </div>
     </div>

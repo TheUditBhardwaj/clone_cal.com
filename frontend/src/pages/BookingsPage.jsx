@@ -1,13 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getBookings, deleteBooking } from '../api';
-import { BookOpen, Trash2, Clock, Mail, User, Search, ChevronRight } from 'lucide-react';
-import { format, isBefore, startOfDay } from 'date-fns';
-
-const STATUS_STYLES = {
-  ACCEPTED: { bg: 'rgba(34,197,94,.1)', color: '#86efac', border: 'rgba(34,197,94,.15)', label: 'Accepted' },
-  CANCELLED: { bg: 'rgba(239,68,68,.08)', color: '#f87171', border: 'rgba(239,68,68,.15)', label: 'Cancelled' },
-  PENDING:   { bg: 'rgba(234,179,8,.08)', color: '#fde047', border: 'rgba(234,179,8,.15)', label: 'Pending' },
-};
+import { BookOpen, Trash2, Clock, Mail, User, Search, ChevronRight, Filter, Settings, MoreHorizontal, Video, ChevronLeft } from 'lucide-react';
+import { format, isBefore, startOfDay, parseISO } from 'date-fns';
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState([]);
@@ -17,153 +11,172 @@ export default function BookingsPage() {
   const [search, setSearch] = useState('');
 
   const fetch = async () => {
-    try { const res = await getBookings(); setBookings(res.data); }
-    catch { setError('Could not load bookings'); }
-    finally { setLoading(false); }
+    try { 
+      const res = await getBookings(); 
+      setBookings(res.data || []); 
+    }
+    catch { 
+      setError('Could not load bookings'); 
+    }
+    finally { 
+      setLoading(false); 
+    }
   };
+
   useEffect(() => { fetch(); }, []);
 
-  const handleCancel = async (id) => {
-    if (!confirm('Cancel this booking?')) return;
-    try { await deleteBooking(id); fetch(); }
-    catch { setError('Failed to cancel'); }
-  };
-
   const today = startOfDay(new Date());
+  
   const filtered = bookings
     .filter((b) => {
-      const bDate = startOfDay(new Date(b.bookingDate));
-      return tab === 'upcoming' ? !isBefore(bDate, today) : isBefore(bDate, today);
-    })
-    .filter((b) => {
-      if (!search) return true;
-      return b.bookerName?.toLowerCase().includes(search.toLowerCase()) ||
-             b.bookerEmail?.toLowerCase().includes(search.toLowerCase());
+      const bDate = startOfDay(parseISO(b.bookingDate));
+      if (tab === 'upcoming') return !isBefore(bDate, today) && b.status !== 'CANCELLED';
+      if (tab === 'past') return isBefore(bDate, today) && b.status !== 'CANCELLED';
+      if (tab === 'cancelled') return b.status === 'CANCELLED';
+      // Mocking for other tabs for now
+      if (tab === 'unconfirmed') return false; 
+      if (tab === 'recurring') return false;
+      return true;
     });
 
   const tabs = [
     { key: 'upcoming', label: 'Upcoming' },
+    { key: 'unconfirmed', label: 'Unconfirmed' },
+    { key: 'recurring', label: 'Recurring' },
     { key: 'past', label: 'Past' },
-    { key: 'cancelled', label: 'Cancelled' },
+    { key: 'cancelled', label: 'Canceled' },
   ];
 
   return (
-    <div className="animate-in pb-12" style={{ minHeight: '100vh', background: 'var(--bg-app)', color: 'var(--text-primary)' }}>
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-1 sm:mb-2 text-white">Bookings</h1>
-            <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-medium">View and manage all your scheduled meetings.</p>
-          </div>
-          <div className="relative w-full sm:w-[280px]">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search attendees…"
-              className="w-full h-11 pl-11 pr-4 bg-[#111] border border-[#222] rounded-xl text-sm focus:border-[var(--accent)] outline-none transition-colors" />
-          </div>
-        </div>
+    <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black pb-20">
+      <div className="max-w-[1600px] mx-auto px-6 sm:px-10 mt-10 space-y-8 animate-in">
+        
+        {/* Header Section */}
+        <header className="space-y-2">
+          <h1 className="text-2xl font-black tracking-tight">Bookings</h1>
+          <p className="text-gray-400 text-sm font-medium opacity-80">
+            See upcoming and past events booked through your event type links.
+          </p>
+        </header>
 
-        {/* Tabs */}
-        <div className="flex gap-6 sm:gap-8 border-b border-[#1f1f1f] mb-10 overflow-x-auto no-scrollbar">
-          {tabs.map((t) => (
-            <button key={t.key} onClick={() => setTab(t.key)}
-              className={`
-                whitespace-nowrap pb-4 text-xs sm:text-sm font-bold tracking-tight transition-all relative
-                ${tab === t.key ? 'text-white' : 'text-[var(--text-muted)] hover:text-white'}
-              `}>
-              {t.label}
-              {tab === t.key && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white rounded-t-full shadow-[0_-2px_8px_rgba(255,255,255,0.4)]" />
-              )}
+        {/* Tabs and Filters Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2 border-b border-white/5">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            {tabs.map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${
+                  tab === t.key 
+                    ? 'bg-[#1a1a1a] text-white shadow-sm' 
+                    : 'text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0a0a0a] border border-white/5 text-gray-400 hover:text-white transition-all text-xs font-bold group">
+              <Filter className="w-3.5 h-3.5" />
+              <span>Filter</span>
             </button>
-          ))}
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0a0a0a] border border-white/5 text-gray-400 hover:text-white transition-all text-xs font-bold group">
+              <span>Saved filters</span>
+              <ChevronRight className="w-3.5 h-3.5 rotate-90 opacity-40 group-hover:opacity-100" />
+            </button>
+          </div>
         </div>
 
-        <div className="space-y-6">
-          {error && (
-            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-sm animate-in">
-              {error}
-            </div>
-          )}
+        {/* Main Content Container */}
+        <div className="rounded-2xl border border-white/5 bg-[#080808] overflow-hidden">
+          {/* Group Header */}
+          <div className="px-6 py-4 border-b border-white/5 bg-[#0a0a0a]/50">
+            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none">TODAY</p>
+          </div>
 
-          <div className="flex flex-col gap-4 sm:gap-5">
+          <div className="divide-y divide-white/5">
             {loading ? (
-              <div className="empty-state py-12"><p>Loading…</p></div>
+              <div className="py-24 text-center text-gray-500 text-sm font-medium">Fetching your schedule...</div>
             ) : filtered.length === 0 ? (
-              <div className="empty-state border border-dashed border-[#222] rounded-3xl py-16 px-4">
-                <BookOpen className="w-12 h-12 mb-4 text-[var(--text-muted)] opacity-20" />
-                <p className="text-sm sm:text-base text-[var(--text-secondary)] font-medium">No {tab} bookings{search && ` matching "${search}"`}.</p>
+              <div className="py-24 text-center flex flex-col items-center justify-center gap-5">
+                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center">
+                  <BookOpen className="w-8 black text-white/10" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-white text-sm font-bold">No {tab} bookings</p>
+                  <p className="text-gray-500 text-xs">You have no {tab} bookings.</p>
+                </div>
               </div>
             ) : (
-              <div className="flex flex-col gap-4 sm:gap-5">
-                {filtered.map((b) => {
-                  const status = STATUS_STYLES[b.status] || STATUS_STYLES.PENDING;
-                  return (
-                    <div key={b.id}
-                      className="group bg-white/[0.01] border border-[#1f1f1f] rounded-3xl p-5 sm:p-7 md:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-6 hover:bg-white/[0.03] hover:border-[var(--border)] transition-all duration-300 cursor-pointer">
-                      
-                      {/* Date block */}
-                      <div className="flex-shrink-0 w-full sm:w-[72px] h-16 sm:h-[72px] flex sm:flex-col items-center justify-center gap-2 sm:gap-0.5 bg-[#111] border border-[#222] rounded-2xl group-hover:border-[var(--border)] transition-colors">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60">
-                          {format(new Date(b.bookingDate), 'MMM')}
-                        </p>
-                        <p className="text-2xl sm:text-3xl font-black text-white leading-none">
-                          {format(new Date(b.bookingDate), 'dd')}
-                        </p>
-                      </div>
+              filtered.map((booking) => (
+                <div key={booking.id} className="p-6 px-10 flex items-center hover:bg-white/[0.02] transition-colors group relative border-white/5">
+                  {/* Left: Date & Link */}
+                  <div className="w-48 space-y-3">
+                    <div className="space-y-1">
+                      <p className="text-sm font-bold text-white leading-none">
+                        {format(parseISO(booking.bookingDate), 'eee, MMM d')}
+                      </p>
+                      <p className="text-xs text-gray-500 font-medium">
+                        {booking.startTime?.slice(0, 5)} - {booking.endTime?.slice(0, 5)}
+                      </p>
+                    </div>
+                    <a href="#" className="flex items-center gap-2 text-violet-400 hover:text-violet-300 transition-all text-xs font-bold">
+                      <Video className="w-3.5 h-3.5" />
+                      <span>Join Cal Video</span>
+                    </a>
+                  </div>
 
-                      {/* Info */}
-                      <div className="flex-1 min-w-0 pr-4">
-                        <div className="flex flex-wrap items-center gap-3 mb-4">
-                          <span className="text-sm sm:text-base font-black text-white tracking-tight">
-                            {format(new Date(b.bookingDate), 'EEEE, MMMM d')}
-                          </span>
-                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[10px] sm:text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
-                            <Clock className="w-3 h-3" />
-                            {b.startTime?.slice(0, 5)} – {b.endTime?.slice(0, 5)}
-                          </div>
-                          <span className="px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest border"
-                            style={{ background: status.bg, color: status.color, borderColor: status.border }}>
-                            {status.label}
-                          </span>
-                        </div>
-                        
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-10">
-                          <div className="flex items-center gap-3 group/user">
-                            <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-bold text-white group-hover/user:bg-white/10 transition-colors">
-                              {b.bookerName?.[0]}
-                            </div>
-                            <span className="text-xs sm:text-sm font-semibold text-[var(--text-secondary)] truncate">
-                              {b.bookerName}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2.5 text-[var(--text-muted)] opacity-60 hover:opacity-100 transition-opacity">
-                            <Mail className="w-3.5 h-3.5" />
-                            <span className="text-xs sm:text-sm font-medium truncate">{b.bookerEmail}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-4 mt-2 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-[#1f1f1f]">
-                        {tab === 'upcoming' && (
-                          <button className="flex items-center gap-2 px-4 py-2 sm:p-2 sm:aspect-square rounded-xl bg-red-500/5 hover:bg-red-500/20 text-red-400 border border-red-500/10 transition-all group/trash" 
-                            onClick={(e) => { e.stopPropagation(); handleCancel(b.id); }}>
-                            <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 group-hover/trash:scale-110 transition-transform" />
-                            <span className="sm:hidden text-xs font-bold uppercase tracking-wider font-sans">Cancel booking</span>
-                          </button>
-                        )}
-                        <div className="p-2 sm:p-0 text-[var(--text-muted)] opacity-0 sm:group-hover:opacity-100 group-hover:translate-x-1 transition-all flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
-                          <span className="hidden sm:inline">Details</span>
-                          <ChevronRight className="w-5 h-5" />
-                        </div>
+                  {/* Center: Title & Description */}
+                  <div className="flex-1 min-w-0 pr-10">
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-bold text-white truncate group-hover:text-violet-400 transition-all">
+                        {booking.eventTitle || 'Meeting'} between Administrator and {booking.bookerName}
+                      </h4>
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-500 font-medium italic opacity-70">
+                          "{booking.eventDescription || 'No description provided'}"
+                        </p>
+                        <p className="text-xs text-gray-500 font-medium">
+                          You and {booking.bookerName}
+                        </p>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+
+                  {/* Right: Actions */}
+                  <button className="p-2 rounded-lg bg-[#0a0a0a] border border-white/5 text-gray-500 hover:text-white transition-all opacity-0 group-hover:opacity-100">
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+                </div>
+              ))
             )}
+          </div>
+
+          {/* Pagination Footer */}
+          <div className="px-6 py-4 bg-[#0a0a0a]/50 border-t border-white/5 flex items-center justify-between text-gray-500">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 bg-[#0a0a0a] border border-white/5 rounded-lg px-2 py-1 text-xs font-bold text-white">
+                <span>10</span>
+                <ChevronRight className="w-3.5 h-3.5 rotate-90 opacity-40" />
+              </div>
+              <span className="text-xs font-bold tracking-tight">rows per page</span>
+            </div>
+            
+            <div className="flex items-center gap-8">
+              <span className="text-[11px] font-bold tracking-tight">
+                {filtered.length > 0 ? `1-${filtered.length} of ${filtered.length}` : '0-0 of 0'}
+              </span>
+              <div className="flex items-center gap-2">
+                <button className="p-1.5 rounded-lg border border-white/5 bg-[#0a0a0a] disabled:opacity-30 disabled:cursor-not-allowed hover:text-white transition-all" disabled>
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button className="p-1.5 rounded-lg border border-white/5 bg-[#0a0a0a] disabled:opacity-30 disabled:cursor-not-allowed hover:text-white transition-all" disabled>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

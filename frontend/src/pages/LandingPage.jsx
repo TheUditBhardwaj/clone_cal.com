@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
-import { ArrowRight, Clock, MapPin, Globe, Video, Mic, MessageSquare, Monitor, MoreHorizontal, Calendar as CalendarIcon } from 'lucide-react';
+import { ArrowRight, Clock, MapPin, Globe, Video, Mic, MessageSquare, Monitor, MoreHorizontal, Calendar as CalendarIcon, ChevronDown, ChevronRight } from 'lucide-react';
 import { OrbitingCircles } from '../components/ui/orbiting-circles';
 
 /* ─── tiny hook: triggers .visible class when element enters viewport ─── */
@@ -158,21 +158,37 @@ export default function LandingPage() {
       <div style={{ minHeight: '100vh', background: '#f4f4f5', fontFamily: "'Plus Jakarta Sans', sans-serif", color: '#111827', overflowX: 'hidden' }}>
 
         {/* ── Navbar ── */}
-        <nav style={{ position: 'sticky', top: 0, zIndex: 50, padding: '12px 24px', display: 'flex', justifyContent: 'center' }}>
-          <div style={{ background: '#fff', borderRadius: '999px', border: '1px solid #e5e7eb', padding: '10px 24px', display: 'flex', alignItems: 'center', gap: '32px', boxShadow: '0 1px 6px rgba(0,0,0,.06)', maxWidth: 900, width: '100%' }}>
-            <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.5px', color: '#111827' }}>Cal.com</span>
-            <div style={{ display: 'flex', gap: 24, flex: 1 }}>
-              {['Solutions ▾', 'Enterprise', 'Cal.ai', 'Developer ▾', 'Resources ▾', 'Pricing'].map(l => (
-                <button key={l} style={{ background: 'none', border: 'none', fontSize: 14, fontWeight: 500, color: '#374151', cursor: 'pointer', fontFamily: 'inherit', padding: '2px 0' }}
-                  onMouseEnter={e => e.target.style.color = '#111827'}
-                  onMouseLeave={e => e.target.style.color = '#374151'}>{l}</button>
-              ))}
+        <header style={{ position: 'sticky', top: 0, zIndex: 50, background: '#f4f4f5', borderBottom: '1px solid #e5e7eb', padding: '12px 40px' }}>
+          <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 40 }}>
+              <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.5px', color: '#111827' }}>Cal.com</span>
+              <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
+                {[
+                  { text: 'Solutions', drop: true },
+                  { text: 'Enterprise', drop: false },
+                  { text: 'Cal.ai', drop: false },
+                  { text: 'Developer', drop: true },
+                  { text: 'Resources', drop: true },
+                  { text: 'Pricing', drop: false }
+                ].map(l => (
+                  <button key={l.text} style={{ background: 'none', border: 'none', fontSize: 13, fontWeight: 500, color: '#4b5563', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4 }}
+                    onMouseEnter={e => e.target.style.color = '#111827'}
+                    onMouseLeave={e => e.target.style.color = '#4b5563'}>
+                    {l.text}
+                    {l.drop && <ChevronDown size={12} strokeWidth={2.5} style={{ opacity: 0.5 }} />}
+                  </button>
+                ))}
+              </div>
             </div>
-            <Link to="/admin" style={{ background: '#111827', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 18px', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit', textDecoration: 'none' }}>
-              Go to app <ArrowRight size={14} />
-            </Link>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginLeft: 'auto' }}>
+              <button style={{ background: 'none', border: 'none', fontSize: 13, fontWeight: 500, color: '#111827', cursor: 'pointer', fontFamily: 'inherit' }}>Sign in</button>
+              <Link to="/admin" style={{ background: '#292929', color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 18px', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit', textDecoration: 'none' }}>
+                Get started <ChevronRight size={14} strokeWidth={3} />
+              </Link>
+            </div>
           </div>
-        </nav>
+        </header>
 
         {/* ── Hero ── */}
         <main style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 24px 0' }}>

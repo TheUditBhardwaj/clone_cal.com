@@ -54,9 +54,11 @@ export default function DashboardPage() {
         {/* Header Section */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
-            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center text-black text-xl font-black shadow-[0_0_20px_rgba(255,255,255,0.1)] border-2 border-white/10">
-              S
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="Logo" 
+              className="w-14 h-14 rounded-2xl flex-shrink-0 shadow-[0_0_20px_rgba(255,255,255,0.1)] border-2 border-white/10" 
+            />
             <div>
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">Welcome back, Scaler</h1>
               <p className="text-gray-400 text-sm sm:text-base font-medium opacity-80 mt-0.5">
